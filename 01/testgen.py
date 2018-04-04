@@ -15,7 +15,10 @@ def load_testcase(fname='tests/test1'):
 		# Flatten the data into a single array of integers
 		grid = reduce(lambda a, x: a+map(int, x.split(' ')), 
 				data.split('\n'), [])
-		return grid
+		n = grid[-1]
+		grid = grid[:-1]
+		assert(len(grid)==n*n*n*n)
+		return grid, n
 	except Exception as e:
 		print e
 		return None
@@ -36,7 +39,7 @@ def testgen():
 		f.write("7 5 0 1 0 0 0 0 0\n")
 		f.write("1 4 0 0 3 0 7 0 5\n")
 		f.write("0 0 0 0 7 2 0 3 0\n")
-		f.write("3 0 0 0 0 1 8 0 9")
+		f.write("3 0 0 0 0 1 8 0 9 3")
 
 if __name__ == "__main__":
 	testgen()
