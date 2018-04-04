@@ -13,8 +13,9 @@ def load_testcase(fname='tests/test1'):
 		with open(fname, 'r') as f:
 			data = f.read()
 		# Flatten the data into a single array of integers
-		grid = reduce(lambda a, x: a+map(int, x.split(' ')), 
-				data.split('\n'), [])
+		# grid = reduce(lambda a, x: a+map(int, x.split(' ')), 
+		# 		data.split('\n'), [])
+		grid = map(int, data.split())
 		n = grid[-1]
 		grid = grid[:-1]
 		assert(len(grid)==n*n*n*n)

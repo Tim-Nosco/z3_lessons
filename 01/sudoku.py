@@ -2,81 +2,52 @@ import testgen
 from z3 import *
 
 def chunks(l, n):
-    """
-    (list[A],int) -> list[list[A]]
-    Yield successive n-sized chunks from l.
-    https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
-    """
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
+	#(list[int],int) -> list[list[int]]
+	for i in range(0,len(l),n):
+		yield l[i:i+n]
 
-def columns(l, n):
-	"""
-	(list[A],int) -> list[list[A]]
-	Produces columns of size n from a flattened
-		matrix l.
-	"""
+def columns(l,n):
+	#(list[int],int) -> list[list[int]]
 	for i in range(n):
 		yield l[i::n]
 
 def boxes(l,n):
-	"""
-	(list[A],int) -> list[list[A]]
-	Produces sudoku flattened boxes of size n*n 
-		from a flattened matrix l.
-	"""
-	#break the map into groups of n (ex. 3)
-	nples = list(chunks(l,n))
-	for i in range(0,len(nples),n*n):
-		for j in range(i,i+n):
-			#(when n=3) j := [0,1,2,9,10,11,18,19,20]
-			#extract the nples who create this box
-			box = nples[j:j+(n*n):n]
-			#flatten box from list[list[Int]] to list[Int]
-			box = sum(box,[])
-			yield box
+	#(list[int],int) -> list[list[int]]
+	all_chunks = list(chunks(l,n))
+	for j in range(0,len(all_chunks),n*n):
+		for i in range(j,j+n):
+			box = all_chunks[i:i+(n*n):n]
+			yield sum(box, [])
 
-def distinct_setup(solver, n, symbol_board):
-	#rows must contian the values 1-9
-	for row in chunks(symbol_board,n*n):
-		solver.add(Distinct(*row))
-	#columns must contain the values 1-9
-	for column in columns(symbol_board,n*n):
-		solver.add(Distinct(*column))
-	#boxes must contain the values 1-9
-	for box in boxes(symbol_board,n):
-		solver.add(Distinct(*box))
+if __name__ == '__main__':
+	testgen.testgen()
+	t, m = testgen.load_testcase()
 
-#load up a testcase
-testgen.testgen()
-t, n = testgen.load_testcase()
+	s = Solver()
+	#make the symbolic board
+	symb = [Int("s{}".format(str(i).zfill(2))) for i in range(len(t))]
+	#assert the defined values and ranges
+	for te, se in zip(t,symb):
+		if te:
+			#element is defined
+			s.add(se==te)
+		else:
+			#we need to complete
+			s.add(se>0)
+			s.add(se<=m*m)
 
-#initialize the solver and symbolic variables
-s = Solver()
-# the symbol names are x00, x01, ..., xn*n*n*n
-symbol_board = [Int("x{}".format(str(i).zfill(2))) for i,_ in enumerate(t)]
-#assert that rows, columns, and boxes may not repeat values
-distinct_setup(s,n,symbol_board)
+	for row in chunks(symb, m*m):
+		s.add(Distinct(*row))
 
-#assert the fixed values and ranges for unfixed values
-for ti, si in zip(t,symbol_board):
-	if ti:
-		#if a testcase has a fixed value, assert that value
-		s.add(si == ti)
+	for column in columns(symb, m*m):
+		s.add(Distinct(*column))
+
+	for box in boxes(symb, m):
+		s.add(Distinct(*box))
+
+	if s.check():
+		mo = s.model()
+		for c in chunks([mo[e].as_long() for e in symb], m*m):
+			print c
 	else:
-		#if the testcase value was 0, assert the symbolic
-		# value must be in (0,n*n]
-		s.add(si <= n*n)
-		s.add(si > 0)
-
-#print the results
-if s.check():
-	print "sat"
-	m = s.model()
-	#pull each symbol from the model, cast it to an int
-	r = [int(str(m[si])) for si in symbol_board]
-	#print the board in a readable way
-	for c in chunks(r,n*n):
-		print c
-else:
-	print "unsat"
+		print "UNSAT"
