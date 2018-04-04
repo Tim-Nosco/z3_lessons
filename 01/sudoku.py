@@ -33,7 +33,7 @@ def boxes(l,n):
 			#extract the nples who create this box
 			box = nples[j:j+(n*n):n]
 			#flatten box from list[list[Int]] to list[Int]
-			box = reduce(lambda a,x: a+x, box, [])
+			box = sum(box,[])
 			yield box
 
 def distinct_setup(solver, n, symbol_board):
@@ -53,6 +53,7 @@ t, n = testgen.load_testcase()
 
 #initialize the solver and symbolic variables
 s = Solver()
+# the symbol names are x00, x01, ..., xn*n*n*n
 symbol_board = [Int("x{}".format(str(i).zfill(2))) for i,_ in enumerate(t)]
 #assert that rows, columns, and boxes may not repeat values
 distinct_setup(s,n,symbol_board)
@@ -60,6 +61,7 @@ distinct_setup(s,n,symbol_board)
 #assert the fixed values and ranges for unfixed values
 for ti, si in zip(t,symbol_board):
 	if ti:
+		#if a testcase has a fixed value, assert that value
 		s.add(si == ti)
 	else:
 		#if the testcase value was 0, assert the symbolic
@@ -71,9 +73,10 @@ for ti, si in zip(t,symbol_board):
 if s.check():
 	print "sat"
 	m = s.model()
+	#pull each symbol from the model, cast it to an int
 	r = [int(str(m[si])) for si in symbol_board]
+	#print the board in a readable way
 	for c in chunks(r,n*n):
 		print c
-
 else:
 	print "unsat"
