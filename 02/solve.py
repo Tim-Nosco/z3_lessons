@@ -6,28 +6,31 @@ all_chars = map(ord,letters+digits+punctuation)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-p = angr.Project("./count",auto_load_libs=False)
+p = angr.Project("./count")
+s = claripy.Solver()
+start = p.factory.entry_state()
 
-seed = p.factory.entry_state(addr=0x804855a)
+f = p.factory.callable(0x080484bb)
+hash_len = 0x20
+var_len = 4
+fin = claripy.BVS('sym_arg', 8*hash_len)
+fixed = '\0'*(hash_len-var_len)
+s.add(fin.get_bytes(var_len, hash_len-var_len)==fixed)
+var_chr = fin.get_bytes(0,1)
+s.add(var_chr >= min(all_chars))
+s.add(var_chr <= max(all_chars))
 
+res = f(fin, hash_len)
+
+flag = ""
 for i in range(44):
-	start_state = seed.copy()
-	round_num = start_state.memory.load(start_state.regs.ebp+0xc,4)
-	param1 = start_state.regs.ebp-0x2c
-	hash_len = 0x20
-	fixed = start_state.memory.load(param1+1,hash_len-1)
-	this_char = start_state.memory.load(param1,1)
-	hash_tail = "-{}".format(hex(i)[2:]).ljust(hash_len-1,'\0')
-	start_state.add_constraints(fixed==hash_tail,
-		this_char >= min(all_chars),
-		this_char <= max(all_chars),
-		round_num == i)
-
-	sm = p.factory.simgr(start_state)
-	logger.info("starting search")
-	logger.info(sm.explore(find=0x804857a, avoid=0x8048581))
-	logger.debug(sm.found)
-
-	for path in sm.found:
-		hash_in = path.memory.load(param1,1)
-		logger.info("FOUND: %s", path.solver.eval(hash_in,cast_to=str))
+	tmp=[]
+	tmp.append(res==start.mem[0x08049a00+4*i].long.concrete)
+	tmp.append(fin.get_bytes(1,var_len)=="-{}".format(hex(i)[2:]).ljust(var_len,'\0'))
+	e = s.eval(fin.get_bytes(0,1),1,extra_constraints=tmp)[0]
+	logger.info("FOUND: %s", e)
+	try:
+		flag += chr(e)
+		logger.info("-> %s", flag)
+	except:
+		pass
