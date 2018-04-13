@@ -35,11 +35,10 @@ h_in = map(password.get_byte, xrange(pw_len+2))
 # inputs to the hash. The PW characters must be
 # letters, digits, or punctuation
 s = p.factory.blank_state()
-printable = force_range(h_in[:-2])
-s.add_constraints(*printable)
+s.add_constraints(*force_range(h_in[:-2]))
 
-#Load the hashing function as a python function (using the base)
-# constraints we specified above
+#Load the hashing function as a python function (using the base
+# constraints we specified above)
 hasher = p.factory.callable(hash_func_addr, base_state=s)
 #finally call the function with our symbolic input
 # collect the return value and the resulting state
@@ -56,4 +55,5 @@ s.add_constraints(res==goal)
 logger.info("Solving for goal: %s", hex(goal))
 pw = s.solver.eval(password, cast_to=str)
 logger.info("FOUND PASSWORD: %s", pw)
+#sanity check
 logger.info("Works? %s", hasher(pw)==goal)
