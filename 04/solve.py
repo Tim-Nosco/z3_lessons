@@ -1,15 +1,9 @@
 import angr, claripy, archinfo
 import logging
-from itertools import imap
-from string import hexdigits
 from struct import unpack, pack
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-def force_range(iter, allowed=hexdigits):
-	for x in iter:
-		yield claripy.Or(*(y==x for y in allowed))
 
 def chunks(l, n):
 	#(list[int],int) -> list[list[int]]
@@ -17,35 +11,40 @@ def chunks(l, n):
 		yield l[i:i+n]
 
 def hook():
+	#for debugging
 	import IPython
 	IPython.embed()
 	exit(0)
 
 p = angr.Project("./philosophersstone", auto_load_libs=False)
 
-s = p.factory.blank_state(addr=0x080484bb)
+decrypt_addr = 	0x80484bb
+decrypt_end = 	0x8048506
+flag_buf_addr = 0x8049b44
+secret_addr = 	0x8049ac0
+s = p.factory.blank_state(addr=decrypt_addr)
 
-def flag_loc(state):
-	return [state.mem[0x8049b44+4*i].uint32_t.resolved for i in range(4)]
-
+#ensure the input location is symbolic
 flag = [claripy.BVS("x{}".format(i),8*4) for i in range(4)]
 for i,x in enumerate(flag):
-	s.memory.store(0x8049b44+4*i, x)
+	s.memory.store(flag_buf_addr+4*i, x)
 
 sm = p.factory.simgr(s)
 logger.info("Starting Explore...")
-logger.info(sm.explore(find=0x08048506))
+logger.info(sm.explore(find=decrypt_end))
 
 for path in sm.found:
-	enc = flag_loc(path)
-	target = chunks("1935957e45db5adb595ed84c2c0ea435".decode('hex'),4)
-	target = [claripy.BVV(unpack(">I",x)[0],4*8) for x in target]
-	constraints = zip(enc, target)
-	# print constraints
-	# hook()
-	path.add_constraints(*[x==y for x,y in constraints])
-
+	#get the encrypted flag
+	enc = [state.mem[flag_buf_addr+4*i].uint32_t.resolved for i in range(4)]
+	#break up the secret string into ints
+	target = chunks(path.mem[secret_addr].string.concrete.decode('hex'),4)
+	target = [unpack(">I",x)[0]for x in target]
+	#ensure the output equals the secret values
+	path.add_constraints(*[x==y for x,y in zip(enc, target)])
+	#evaluate each input integer
 	fp = [pack("<I",path.solver.eval(x)) for x in flag]
+	#join the bytes together as hex
 	fp = ''.join(fp).encode('hex')
+	#print the flag
 	logger.info("FLAG: %s", fp)
 
