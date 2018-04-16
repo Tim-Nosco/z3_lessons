@@ -39,7 +39,6 @@ for path in sm.found:
 	enc = [path.mem[flag_buf_addr+4*i].uint32_t.resolved for i in range(4)]
 	#break up the secret string into ints
 	target = chunks(path.mem[secret_addr].string.concrete.decode('hex'),4)
-	#Optional: target = [unpack(">I",x)[0]for x in target]
 	#ensure the output equals the secret values
 	path.add_constraints(*[x==y for x,y in zip(enc, target)])
 	#evaluate each input integer
