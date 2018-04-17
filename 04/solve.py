@@ -23,6 +23,7 @@ decrypt_addr = 	0x80484bb
 decrypt_end = 	0x8048506
 flag_buf_addr = 0x8049b44
 secret_addr = 	0x8049ac0
+output_buf =	0x8049b20
 s = p.factory.blank_state(addr=decrypt_addr)
 
 #ensure the input location is symbolic
