@@ -15,15 +15,16 @@ class Master:
 		self.agents = agents
 		assert(len(agents)>0)
 		nrow = agents[0].board.n
+		self.nrow = nrow
 		ncol = agents[0].board.m
-		bsize = agents[0].board.total
+		self.bsize = agents[0].board.total
 		assert(all(a.board.n==nrow and a.board.m==ncol for a in agents))
 		self.solver = Solver()
 		#set up the agent's constraints
 		for a in agents:
 			self.solver.add(a.ensure_path())
 		#ensure no two agents use the same vertex
-		for i in xrange(bsize):
+		for i in xrange(self.bsize):
 			s = 0
 			for a in agents:
 				s += BV2Int(Extract(i,i,a.board.BV))
@@ -34,10 +35,16 @@ class Master:
 		if self.solver.check()==sat:
 			logger.info("SAT")
 			m = self.solver.model()
+			main_board = list("."*self.bsize)
 			for a in self.agents:
 				board = bin(m[a.board.BV].as_long())[2:].zfill(a.board.total)[::-1]
-				board = '\n'.join(chunks(board,a.board.n))
-				logger.info("AGENT: %s:\n%s",a.name,board)
+				logger.info(board)
+				for i,c in enumerate(board):
+					if c=='1':
+						main_board[i]=a.name
+			main_board = '\n'.join(chunks(''.join(main_board),self.nrow))
+			logger.info("\n%s",main_board)
+
 			return sat
 		else:
 			logger.info("UNSAT")
