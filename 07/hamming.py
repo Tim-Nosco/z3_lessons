@@ -2,7 +2,8 @@ import angr, claripy
 from itertools import imap
 import logging
 
-logger = logging.getLogger()
+#setup the logging
+logger = logging.getLogger('hamming.py')
 logger.setLevel(logging.INFO)
 logging.basicConfig()
 
@@ -27,19 +28,25 @@ functions = dict(zip(symbs, imap(p.factory.callable, imap(get_addr,symbs))))
 #define a BV to hold our function's input
 inBV = claripy.BVS("i",32)
 #run each function with inBV
+logger.info('Running each function with symbolic input.')
 results = dict((name, functions[name](inBV)) for name in functions)
 #collect the final states
 result_states = (x.result_state for x in functions.values())
 #merge them all together
+logger.info('Merging states.')
 state = reduce(lambda a,x: a.merge(x)[0], result_states, p.factory.blank_state())
 
 #see if all the functions match the reference
-ref = results['ffs_ref']
-for name in symbs[1:]:
+ref_name = 'ffs_ref'
+ref = results[ref_name]
+symbs = set(symbs)
+symbs.remove(ref_name)
+for name in symbs:
 	imp = False
 	CE = None
 	try:
 		#attept to find negation
+		logger.info('Asking solver to prove %s == %s.', ref_name, name)
 		CE = state.solver.eval(inBV, extra_constraints=[ref != results[name]])
 	except angr.errors.SimUnsatError:
 		#could not find an instance of function != ref
