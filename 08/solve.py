@@ -57,25 +57,29 @@ p.hook(0x004037a5, Te4_lookup, length=7)
 p.hook(0x004037bb, Te4_lookup, length=7)
 p.hook(0x004037d1, Te4_lookup, length=7)
 
+def chunks(l, n):
+	#(list[int],int) -> list[list[int]]
+	for i in range(0,len(l),n):
+		yield l[i:i+n]
 
 def wall2():
 	global p
 	logger.info("setting up sym args")
-	rk = [claripy.BVS("rk{}".format(i), 8*4) for i in range(60)]
 	key = claripy.BVS('key', 8*16)
 	keyarr = [key.get_byte(i) for i in range(16)]
 	s = p.factory.blank_state()
 	s.add_constraints(*[k!='\0' for k in keyarr])
-	for i, k in enumerate(reversed(rk)):
-		s.stack_push(k)
-	rk_start = s.regs.rsp
+	rk_start = s.regs.rbp + 32
+	for i in range(60):
+		s.memory.store(rk_start+4*i, claripy.BVV(0,8*4))
 	logger.info("starting symbolic execution on aes")	
 	aes_addr = p.loader.find_symbol('rijndaelKeySetupEnc').rebased_addr
 	aes = p.factory.callable(aes_addr, base_state=s)
 	r = aes(rk_start,keyarr,0x80)
 	s = aes.result_state
-	rk_final = [s.memory.load(rk_start+4*i,4) for i in range(len(rk))]
+	rk_final = [s.memory.load(rk_start+4*i,4) for i in range(60)]
 	magic = 0x28
+	hook(locals())
 	s.add_constraints(	rk_final[magic+0]==0x048a97a0,
 						rk_final[magic+1]==0xac9a53b7,
 						rk_final[magic+2]==0xd37fd65b,
