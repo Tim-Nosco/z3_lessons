@@ -1,4 +1,4 @@
-import angr, claripy
+import angr, claripy, z3
 import logging
 import subprocess
 
@@ -68,10 +68,17 @@ def wall2():
 	key = claripy.BVS('key', 8*16)
 	keyarr = [key.get_byte(i) for i in range(16)]
 	s = p.factory.blank_state()
+	#ensure the rk start values are 0
 	s.add_constraints(*[k!='\0' for k in keyarr])
 	rk_start = s.regs.rbp + 32
 	for i in range(60):
 		s.memory.store(rk_start+4*i, claripy.BVV(0,8*4))
+	#make the Te4 lookup table
+	Te4_table = z3.Function("Te4", z3.BitVecSort(8), z3.BitVecSort(32))
+	#to get a z3 solver: s._solver_backend.solver()
+	#todo make conditions stay in s
+	#todo turn claripybv into z3bv
+
 	logger.info("starting symbolic execution on aes")	
 	aes_addr = p.loader.find_symbol('rijndaelKeySetupEnc').rebased_addr
 	aes = p.factory.callable(aes_addr, base_state=s)
