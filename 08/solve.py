@@ -38,20 +38,22 @@ def wall1():
 	logger.info("evaluating arguments")
 	return map(str,(s.solver.eval(arg1), s.solver.eval(arg2)))
 
-count = 0
+table_lookups = []
 def Te4_lookup(s):
-	global count
+	global table_lookups
+	count = len(table_lookups)
 	logger.info("Te4 inject at %s:%s.", count/4, hex(s.addr)[2:].replace('L',''))
-	offset = s.regs.rax[7:0]
-	Te4 = p.loader.find_symbol("Te4").rebased_addr
-	def builder(a,x):
-		return claripy.If(offset==x, s.mem[Te4+x*4].uint32_t.concrete, a)
-	tmp = reduce(builder, range(256), claripy.BVV(0,8*4))
-	s.regs.rax = tmp
+	offset = s.regs.rax[7:0] #todo is the asm: mov rax, [Te4+4*AL]
+	index = claripy.BVS("idx{}".format(count),8)
+	s.add_constraints(index==offset)
+	result = claripy.BVS("res{}".format(count),8)
+	s.regs.rax = result.concat(result).concat(result).concat(result).zero_extend(32)
+	table_lookups.append((index,result))
 	count+=1
 	# if count/4 == 10:
 	# 	angr_logger.setLevel(logging.DEBUG)
 
+#these instructions are a symbolic table read from Te4
 p.hook(0x0040378c, Te4_lookup, length=7)
 p.hook(0x004037a5, Te4_lookup, length=7)
 p.hook(0x004037bb, Te4_lookup, length=7)
@@ -67,38 +69,46 @@ def wall2():
 	logger.info("setting up sym args")
 	key = claripy.BVS('key', 8*16)
 	keyarr = [key.get_byte(i) for i in range(16)]
-	s = p.factory.blank_state()
+	s = p.factory.blank_state(remove_options={angr.options.COMPOSITE_SOLVER})
 	#ensure the rk start values are 0
 	s.add_constraints(*[k!='\0' for k in keyarr])
 	rk_start = s.regs.rbp + 32
 	for i in range(60):
 		s.memory.store(rk_start+4*i, claripy.BVV(0,8*4))
-	#make the Te4 lookup table
-	Te4_table = z3.Function("Te4", z3.BitVecSort(8), z3.BitVecSort(32))
-	#to get a z3 solver: s._solver_backend.solver()
-	#todo make conditions stay in s
-	#todo turn claripybv into z3bv
 
 	logger.info("starting symbolic execution on aes")	
 	aes_addr = p.loader.find_symbol('rijndaelKeySetupEnc').rebased_addr
 	aes = p.factory.callable(aes_addr, base_state=s)
-	r = aes(rk_start,keyarr,0x80)
+	r = aes(rk_start,keyarr,0x80) #todo args are int*, char*, int?
 	s = aes.result_state
 	rk_final = [s.memory.load(rk_start+4*i,4) for i in range(60)]
+
 	magic = 0x28
-	hook(locals())
 	s.add_constraints(	rk_final[magic+0]==0x048a97a0,
 						rk_final[magic+1]==0xac9a53b7,
 						rk_final[magic+2]==0xd37fd65b,
 						rk_final[magic+3]==0x15cf1362)
-	logger.info("Asking sat solver for key")
-	try:
-		resolved = s.solver.eval(key,cast_to=str)
-	except angr.errors.SimUnsatError:
-		logger.error("UNSAT!")
-		hook(locals())
-	logger.info("KEY: %s",resolved)
-	logger.info(resolved.encode('hex'))
+
+	#make the Te4 lookup table
+	Te4 = p.loader.find_symbol("Te4").rebased_addr
+	Te4_table = [(x,s.mem[Te4+x*4].uint8_t.concrete) for x in range(256)]
+	z3_table = z3.Function("Te4", z3.BitVecSort(8), z3.BitVecSort(8))
+	z3_solver = s.solver._solver._get_solver()
+	for i, e in Te4_table:
+		z3_solver.add(z3_table(i)==e)
+	global table_lookups
+	for idx, res in table_lookups:
+		idx = claripy.backends.z3.convert(idx)
+		res = claripy.backends.z3.convert(res)
+		z3_solver.add(z3_table(idx)==res)
+	logger.info("Checking satisfiability")
+	logger.info(z3_solver.check())
+	logger.info("Getting model")
+	m = z3_solver.model()
+	z3key = claripy.backends.z3.convert(key)
+	resolved_key = hex(m[z3key].as_long())[2:].replace('L','').decode('hex')
+	logger.info("KEY: {}".format(repr(resolved_key)))
+
 	hook(locals())
 
 argv = [p.filename]
