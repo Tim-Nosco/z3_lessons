@@ -106,7 +106,7 @@ def wall2():
 	Te4 = p.loader.find_symbol("Te4").rebased_addr
 	for i in range(256):
 		z3_solver.add(z3_table(i)==s.mem[Te4+i*4].uint8_t.concrete)
-	#for each tuple saved in Te4_lookup, conver to z3 bv then 
+	#for each tuple saved in Te4_lookup, convert to z3 bv then 
 	# assert that the index and result are related via the z3 function
 	for e in table_lookups:
 		idx, res = map(claripy.backends.z3.convert, e)
