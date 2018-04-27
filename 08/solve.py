@@ -83,29 +83,30 @@ def wall2():
 
 	#make the Te4 lookup table
 	Te4 = p.loader.find_symbol("Te4").rebased_addr
-	Te4_table = [s.mem[Te4+x*4].uint8_t.concrete for x in range(256)]
-	logger.info("Starting symbolic lookups.")
-	total = str(len(table_lookups)).zfill(2)
-	def builder(offset,a,x):
-		return claripy.If(x==offset, Te4_table[x], a)
-	for i,e in enumerate(table_lookups):
-		k,v = e
-		logger.info("Doing lookup number %s/%s", str(i+1).zfill(2), total)
-		mux = reduce(partial(builder,k),range(256),claripy.BVV(0,8))
-		s.add_constraints(mux==v)
-
-	logger.info("Done with lookups.")
-
-	logger.info("Evaluating key.")
-	resolved_key = s.solver.eval(key,cast_to=str)
-	logger.info("FOUND: %s", repr(resolved_key))
-	# FOUND: 'ACHIEVEMENTAWARD'
+	Te4_table = [(x,s.mem[Te4+x*4].uint8_t.concrete) for x in range(256)]
+	z3_table = z3.Function("Te4", z3.BitVecSort(8), z3.BitVecSort(8))
+	z3_solver = s.solver._solver._get_solver()
+	for i, e in Te4_table:
+		z3_solver.add(z3_table(i)==e)
+	global table_lookups
+	for idx, res in table_lookups:
+		idx = claripy.backends.z3.convert(idx)
+		res = claripy.backends.z3.convert(res)
+		z3_solver.add(z3_table(idx)==res)
+	logger.info("Checking satisfiability")
+	logger.info(z3_solver.check())
+	logger.info("Getting model")
+	m = z3_solver.model()
+	z3key = claripy.backends.z3.convert(key)
+	resolved_key = hex(m[z3key].as_long())[2:].replace('L','').decode('hex')
+	logger.info("KEY: {}".format(repr(resolved_key)))
+	# KEY: 'ACHIEVEMENTAWARD'
 	return [resolved_key]
 
 def wall10():
 	global p
 	logger.info("setting up sym args")
-	keylen = 0x1d
+	keylen = 0x2
 	key = claripy.BVS('key', 8*keylen)
 	keyarr = [key.get_byte(i) for i in range(keylen)]
 	s = p.factory.blank_state()
@@ -127,6 +128,6 @@ argv += ('174','116')# wall1()
 argv += ['ACHIEVEMENTAWARD']#wall2()
 argv += ['a']*5
 argv += ['B'*5]
-argv += wall10()
+# argv += wall10()
 test_run(argv)
 argv +=[claripy.BVS("argv{}".format(i),8*3) for i in range(len(argv),wall_zero+1)]
