@@ -19,6 +19,7 @@ def hook(s):
 
 wall_zero = 0xc
 def test_run(argv):
+	#runs the program and ensures it passes wall0
 	if len(argv) < wall_zero:
 		argv += ['a']*(wall_zero-len(argv))
 	logger.info("testing with the following command:\n%s",argv)
@@ -28,9 +29,13 @@ p = angr.Project('./kingdomv2', auto_load_libs=False)
 
 def wall1():
 	global p
+	#start at gcd() because atoi simprocedure concretizes input
+	#setup the arguments
 	arg1, arg2 = [claripy.BVS("arg{}".format(i), 8) for i in (1,2)]
 	s = p.factory.blank_state()
+	#program asserts the args cannot be a trivial solution
 	s.add_constraints(arg1!=0x3a, arg2!=0x3a)
+	#lookup gcd address
 	gcd_addr = p.loader.find_symbol('gcd').rebased_addr
 	gcd = p.factory.callable(gcd_addr, base_state=s)
 	logger.info("starting symbolic execution: gcd(%s, %s)",arg1,arg2)
@@ -122,31 +127,9 @@ def wall2():
 	# KEY: 'ACHIEVEMENTAWARD'
 	return [resolved_key]
 
-def wall10():
-	global p
-	logger.info("setting up sym args")
-	keylen = 0x2
-	key = claripy.BVS('key', 8*keylen)
-	keyarr = [key.get_byte(i) for i in range(keylen)]
-	s = p.factory.blank_state()
-	s.add_constraints(*[k!='\0' for k in keyarr])
-
-	logger.info("starting symbolic execution on crc")	
-	crc_addr = p.loader.find_symbol('crc32_test').rebased_addr
-	crc = p.factory.callable(crc_addr, base_state=s)
-	r = crc(keyarr)
-	s = crc.result_state
-	s.add_constraints(r==3)
-	logger.info("Checking satisfiabliity")
-	resolved_key = s.solver.eval(key,cast_to=str)
-	logger.info("FOUND: %s", repr(resolved_key))
-	return [resolved_key]
-
 argv = [p.filename]
 argv += wall1() # ('174','116')
 argv += wall2() # ['ACHIEVEMENTAWARD']
 argv += ['a']*5
 argv += ['B'*5]
-# argv += wall10()
 test_run(argv)
-argv +=[claripy.BVS("argv{}".format(i),8*3) for i in range(len(argv),wall_zero+1)]
