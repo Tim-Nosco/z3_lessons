@@ -45,12 +45,11 @@ def wall1():
 	logger.info("evaluating arguments")
 	return map(str,(s.solver.eval(arg1), s.solver.eval(arg2)))
 
-table_lookups = []
 def Te4_lookup(s):
 	#use the global list to save offset/result pairs
-	global table_lookups
+	t = s.globals.get('table_lookups',[])
 	#do some logging
-	count = len(table_lookups)
+	count = len(t)
 	logger.info("Te4 inject at %s:%s.", count/4, hex(s.addr)[2:].replace('L',''))
 	#only 256 options for the offset (from AL)
 	offset = s.regs.rax[7:0]
@@ -63,7 +62,8 @@ def Te4_lookup(s):
 						repeat(result,3), 
 						result).zero_extend(32)
 	#save the tuple for later assertions (in a z3.Function)
-	table_lookups.append((index,result))
+	t.append((index,result))
+	s.globals['table_lookups'] = t
 
 #these instructions are a symbolic table read from Te4. they look like:
 # 0040378c 	8b 04 85    	MOV  EAX,[Te4 + RAX*0x4]
@@ -108,7 +108,7 @@ def wall2():
 		z3_solver.add(z3_table(i)==s.mem[Te4+i*4].uint8_t.concrete)
 	#for each tuple saved in Te4_lookup, convert to z3 bv then 
 	# assert that the index and result are related via the z3 function
-	for e in table_lookups:
+	for e in s.globals['table_lookups']:
 		idx, res = map(claripy.backends.z3.convert, e)
 		z3_solver.add(z3_table(idx)==res)
 	#ensure the problem is sat
@@ -128,7 +128,10 @@ def wall2():
 	return [resolved_key]
 
 argv = [p.filename]
-argv += wall1() # ('174','116')
+# argv += wall1()
+argv += ('174','116')
+logger.info("ARGV: %s", argv)
+raw_input("Continue?")
 argv += wall2() # ['ACHIEVEMENTAWARD']
 argv += ['a']*5
 argv += ['B'*5]

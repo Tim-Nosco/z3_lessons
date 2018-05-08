@@ -22,22 +22,19 @@ def hook():
 p = angr.Project('./count', use_sim_procedures=False)
 
 s = p.factory.blank_state(mode="tracing")
-phash = p.factory.callable(0x080484bb, base_state=s)
-flaghashes = p.loader.find_symbol('flaghashes').rebased_addr
+check_flag_char_addr = p.loader.find_symbol("check_flag_char").rebased_addr
+check_flag_char = p.factory.callable(check_flag_char_addr, base_state=s)
 
 solver = claripy.Solver()
-fmt = lambda x,y: "{}-{}".format(x,y).ljust(0x20, '\0')
-
 flag = ""
 for i in range(44):
-	goal = s.mem[flaghashes+i*4].uint32_t.concrete
 	for char in printable:
-		r = phash(fmt(char,hex(i)[2:].replace('L','')), 0x20)
+		guess = claripy.BVV(char).zero_extend(32-8)
+		r = check_flag_char(guess,i)
 		r = solver.eval(r,1)[0]
-		if r == goal:
-			logger.info("found: %s", char)
+		if r==1:
+			logger.info("FOUND: %s", char)
 			flag+=char
-			logger.info("flag: %s", flag)
+			logger.info("FLAG: %s", flag)
 			break
-
 hook()
