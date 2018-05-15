@@ -8,9 +8,7 @@ The problem I considered for this exercise was kingdom: a crafted non-stripped b
 The first thing I did when auditing kingdom was to look at the decompilation. *Figure 1* shows the natural auditing start point, `main`.
 
 ```c
-int main(int argc,char **argv)
-
-{
+int main(int argc,char **argv){
   char cVar1;
   uint8_t uVar2;
   int iVar3;
@@ -43,8 +41,7 @@ Run Program Correctly Wall destroyed...please continue (0/10)
 For this wall, I had to reason about the function symbol `gcd_test`. This function takes two arguments and converts them to integers. It asserts that neither are equal to `0x3a` and that the second is not equal to `0`.  Then `gcd_test` calls a new symbol, `gcd` on the converted arguments. If the return value of `gcd` is `0x3a`, we print the string "_GCD Wall destroyed ..._" from *Figure 1*.
 
 ```c
-uint8_t gcd(uint8_t a,uint8_t b)
-{
+uint8_t gcd(uint8_t a,uint8_t b){
   if (b != 0) {
     a = gcd(b,a % b);
   }
@@ -221,4 +218,20 @@ Advanced_Control Flow Merging Wall destroyed - 2 achievments awarded...please co
 
 ### Achievements 4 through 9
 
+As demonstrated in *Figure 11*, my very simple fuzzing (all _a_'s) got us through some fairly tricky challenges. I did not test `angr`'s performance on these due to the significant time investment in the _Malicious AES Wall_. For the 9th achievement, I looked at the `exploitmealso` function symbol. To pass achievement `9` of `10`, `exploitmealso` must return `B`. It is immediately apparent to me that this function copies its arguments into a 1-byte buffer, and the return value is stored above this buffer on the stack. Without much more analysis, I tried passing a few `B`s and passed the wall.
 
+```
+% ./kingdom 174 116 ACHIEVEMENTAWARD `python -c "print ' '.join(['a']*5+['B'*5]+['a']*2)"`
+Run Program Correctly Wall destroyed...please continue (0/10)
+174, 116, 58GCD Wall destroyed - 2 achievments awarded...please continue (2/10)
+Malicious AES Wall destroyed - achievment awarded...please continue (3/10)
+Symbolic Termination Wall destroyed - achievment awarded...please continue (4/10)
+Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (6/10)
+Advanced_Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (8/10)
+Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
+```
+*Figure 12*. Passing achievements `9` of `10`.
+
+### Conclusion
+
+`angr` made the _Malicious AES Wall_ much easier than manually reversing the math done during key expansion. It solved _GCD_ quickly as well once I started past the `atoi` and `strlen` calls. Overall, the combination of manual analysis and automated analysis was more effective than either alone.
