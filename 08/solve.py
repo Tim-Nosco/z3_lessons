@@ -25,7 +25,7 @@ def test_run(argv):
 	logger.info("testing with the following command:\n%s",argv)
 	logger.info(subprocess.call(argv))
 
-p = angr.Project('./kingdomv2', auto_load_libs=False)
+p = angr.Project('./kingdom', auto_load_libs=False)
 
 def wall1():
 	global p
