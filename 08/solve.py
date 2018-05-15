@@ -5,7 +5,7 @@ from functools import partial
 from itertools import repeat
 
 angr_logger = logging.getLogger()
-angr_logger.setLevel(logging.INFO)
+angr_logger.setLevel(logging.WARNING)
 logger = logging.getLogger('solve.py')
 logging.basicConfig()
 logger.setLevel(logging.INFO)
@@ -128,8 +128,8 @@ def wall2():
 	return [resolved_key]
 
 argv = [p.filename]
-# argv += wall1()
-argv += ('174','116')
+argv += wall1()
+# argv += ('174','116')
 logger.info("ARGV: %s", argv)
 raw_input("Continue?")
 argv += wall2() # ['ACHIEVEMENTAWARD']
