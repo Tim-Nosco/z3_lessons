@@ -234,4 +234,4 @@ Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
 
 ### Conclusion
 
-`angr` made the _Malicious AES Wall_ much easier than manually reversing the math done during key expansion. It solved _GCD_ quickly as well once I started past the `atoi` and `strlen` calls. Overall, the combination of manual analysis and automated analysis was more effective than either alone.
+`angr` made the _Malicious AES Wall_ much easier than manually reversing the math done during key expansion. It solved _GCD_ quickly once I started past the `atoi` and `strlen` calls. Overall, the combination of manual analysis and automated analysis was more effective than either alone.
