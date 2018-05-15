@@ -1,9 +1,9 @@
 
-### Introduction. 
+### Introduction
 
 The problem I considered for this exercise was kingdom: a crafted non-stripped binary designed to test symbolic execution engines. The binary contains a series of "walls" that must be solved sequentially. To the best of my knowledge, no tool has been able to automatically solve the challenges starting with only the binary code. I used a combination of automation and static analysis to work through each wall.
 
-### Survey. 
+### Survey
 
 The first thing I did when auditing kingdom was to look at the decompilation. *Figure 1* shows the natural auditing start point, `main`.
 
@@ -26,98 +26,19 @@ int main(int argc,char **argv)
         fprintf(stderr,
                 "Malicious AES Wall destroyed - achievment awarded...please continue (%u/%u)\n",3,10
                );
-        uVar2 = termination_test(argv[4]);
-        if (uVar2 == 3) {
-          fprintf(stderr,
-                  "Symbolic Termination Wall destroyed - achievment awarded...please continue(%u/%u)\n"
-                  ,4,10);
-          uVar2 = control_flow_test(argv[5],argv[6]);
-          if (uVar2 == 3) {
-            fprintf(stderr,
-                    "Control Flow Merging Wall destroyed - 2 achievments awarded...please continue(%u/%u)\n"
-                    ,6,10);
-            uVar2 = advanced_control_flow_test(argv[7],argv[8]);
-            if (uVar2 == 3) {
-              fprintf(stderr,
-                      "Advanced_Control Flow Merging Wall destroyed - 2 achievmentsawarded...please continue (%u/%u)\n"
-                      ,8,10);
-              uVar4 = strlen(argv[9]);
-              if (uVar4 < 3) {
-                iVar3 = 2;
-              }
-              else {
-                cVar1 = argv[9][2];
-                argv[9][2] = 0;
-                uVar2 = exploitmealso(argv[9]);
-                if (uVar2 == 'B') {
-                  argv[9][2] = cVar1;
-                  fprintf(stderr,
-                          "Exploit Chaining Wall destroyed - achievment awarded...please continue(%u/%u)\n"
-                          ,9,10);
-                  uVar2 = crc32_test(argv[10]);
-                  if (uVar2 == 3) {
-                    fprintf(stderr,
-                            "Program Synthesis Wall destroyed - achievment awarded...pleasecontinue (%u/%u)\n"
-                            ,10,10);
-                    fwrite("All walls destroyed - YOU WIN!\n",1,0x1f,stderr);
-                    exploitme(argv[0xb]);
-                    iVar3 = 3;
-                  }
-                  else {
-                    iVar3 = 2;
-                  }
-                }
-                else {
-                  iVar3 = 2;
-                }
-              }
-            }
-            else {
-              if (uVar2 == 4) {
-                exploitme(argv[0xb]);
-              }
-              iVar3 = 2;
-            }
-          }
-          else {
-            if (uVar2 == 4) {
-              exploitme(argv[0xb]);
-            }
-            iVar3 = 2;
-          }
-        }
-        else {
-          if (uVar2 == 4) {
-            exploitme(argv[0xb]);
-          }
-          iVar3 = 2;
-        }
-      }
-      else {
-        iVar3 = 2;
-      }
-    }
-    else {
-      iVar3 = 2;
-    }
-  }
-  else {
-    iVar3 = 2;
-  }
-  return iVar3;
-}
+...
 ```
 *Figure 1.* The main function of kingdom.
 
 Immediately apparent in `main` is the requirement that `argv` must have `0xc` many elements: `argc==0xc`. Running the program as in *Figure 2* causes us to get past this check.
 
 ```
-% ./kingdomv2 `python -c "print ' '.join(['a']*0xb)"`
+% ./kingdom `python -c "print ' '.join(['a']*0xb)"`
 Run Program Correctly Wall destroyed...please continue (0/10)
 ```
-*Figure 2.* Passing wall `0` of `10`.
+*Figure 2.* Passing achievements `0` of `10`.
 
-### Wall 1.
+### GCD
 
 For this wall, I had to reason about the function symbol `gcd_test`. This function takes two arguments and converts them to integers. It asserts that neither are equal to `0x3a` and that the second is not equal to `0`.  Then `gcd_test` calls a new symbol, `gcd` on the converted arguments. If the return value of `gcd` is `0x3a`, we print the string "_GCD Wall destroyed ..._" from *Figure 1*.
 
@@ -156,3 +77,148 @@ def wall1():
 In the function shown in *Figure 4*, I first define two 8-bit symbolic bit vectors called `arg1` and `arg2`. Then I create an empty state object from which I will begin symbolic execution. I assert that neither `arg1` nor `arg2` can be the trivial solution `0x3a`. Next, I find the `gcd` function in the kingdom binary and wrap it in a python callable object. `gcd(arg1,arg2)` kicks off the symbolic execution of `gcd`. When the symbolic execution completes, I extract the resulting state. `angr` builds this state by merging all returning paths through the program. Next, I assert that the return value of my `gcd` call must be `0x3a`. The last step is to ask the SMT solver -- `z3` in this case -- to find a satisfying `arg1` and `arg2` to the constraints defined in the symbolic state.
 
 I was happy to see that `angr` could reason about this `gcd` function as a successful symbolic execution required `angr` to do frequent state merging and reason about symbolic termination. The reason I began symbolic execution at `gcd` instead of `gcd_test`, however, is because `angr` is not as good at reasoning about things like `atoi` and `strlen`. Both of these functions are used in `gcd_test` to convert the string arguments into integers for `gcd`. With these `SimProcedures` -- as `angr` calls them -- a common strategy is to evaluate the input arguments into concrete values, run the procedure, then continue simulating from the concrete state. This is not ideal for our analysis and given the choice between writing a fully symbolic `SimProcedure` or working backwards through `atoi`, I chose the latter. 
+
+```
+% ./kingdom 174 116 `python -c "print ' '.join(['a']*(0xb-2))"`
+Run Program Correctly Wall destroyed...please continue (0/10)
+174, 116, 58GCD Wall destroyed - 2 achievments awarded...please continue (2/10)
+```
+*Figure 5.* Passing `2` achievements of `10`.
+
+### AES Key Expansion
+
+For this next wall, I attempted to symbolically execute `malicious_aes_test`, called from `main` in *Figure 1*. This function requires the player to reverse a key that has undergone the AES key expansion procedure. I set up a script as in *Figure 6*.
+
+```python
+def wall2():
+  #setup the key to expand
+  logger.info("setting up sym args")
+  key = claripy.BVS('key', 8*16)
+  keyarr = [key.get_byte(i) for i in range(16)]
+  #Make sure angr only uses 1 solver
+  s = p.factory.blank_state(remove_options={angr.options.COMPOSITE_SOLVER})
+  s.add_constraints(*[k!='\0' for k in keyarr])
+
+  logger.info("starting symbolic execution on aes") 
+  aes_addr = p.loader.find_symbol('malicious_aes_test').rebased_addr
+  aes = p.factory.callable(aes_addr, base_state=s)
+  #when calling the function, use the python list so angr makes a pointer
+  r = aes(keyarr)
+  s = aes.result_state
+  s.add_constraints(r==3)
+  
+  # CONTINUED IN FIGURE 10.
+```
+*Figure 6*. Attempting to solve the _Malicious AES Wall_.
+
+Unfortunately, this code did not pass the "Coffee Test". The "Coffee Test" describes when you begin a symbolic execution or SAT query, get up from the computer to get a cup of coffee and return to see whether your query has completed or not. If it has not completed, it is unlikely to complete in a reasonable amount of time.
+
+To discover the issue, I enabled `DEBUG` logging on `angr`. I found that the symbolic execution would spend an extraordinary time in the solver after the block ending at address `0x00403855`. This block does quite a few things, but intuition (and a bit of nudging from my adviser) told me the issue would be symbolic look-ups into the AES substitution-box. This table has the symbol `Te4` in this binary. The problem instruction is replicated in *Figure 7*. Four instructions in the problem block take the same form.
+
+```
+0040378c 8b 04 85        MOV        EAX,[Te4 + RAX*0x4]
+         a0 90 60 00
+```
+*Figure 7*. The symbolic addressing in `malicious_aes_test`.
+
+So I needed a better way to do the symbolic execution for this instruction. Fortunately, `angr` allows me to overwrite any arbitrary part of the execution with my own python code. I had to sleep on the problem for a day to come up with how I could be more efficient than `angr`, though. The solution I thought of was to compare `angr`'s symbolic addressing to another symbolic execution engine named `cryptol`. I chose this platform because someone had already programmed the AES key expand algorithm in their domain specific language. `cryptol` was easily able to reverse the key expansion and did so in a matter of seconds. *Figure 8* demonstrates this experiment.
+
+```cryptol
+AES> :sat \key -> join (join (transpose (ExpandKey key).2)) == 0x048a97a0ac9a53b7d37fd65b15cf1362
+  0x414348494556454d454e544157415244 = True
+(Total Elapsed Time: 9.497s, using Z3)
+```
+*Figure 8*. Reversing AES key expansion. The solver returned in 9.497 cpu seconds.
+
+By running `:s prover=offline`, I had `cryptol` dump the `smtlib2`. `cryptol` builds a `z3.Function` that accepts an 8-bit bit-vector as an argument and returns an 8-bit bit-vector. The benefit to building the sbox table this way is that `z3.Function`s support symbolic arguments. Apparently, it does this much more efficiently than `angr`. I should provide one final note on `cryptol` before I continue. The fact that `cryptol` can perform this reversal so quickly is not a fair comparison to `angr` because someone had to write `cryptol` code for the AES Key Expansion procedure. `angr` lifts binary code and does analysis on that. This almost always results in a significantly more complicated problem than hand-written formal verification code. In order to solve this AES wall with `cryptol`, I would have to re-write the entire AES Key Expansion procedure. For `angr`, on the other hand, I only need to overwrite the `MOV` in *Figure 7*.
+
+```python
+def Te4_lookup(s):
+  #use the global list to save offset/result pairs
+  t = s.globals.get('table_lookups',[])
+  #do some logging
+  count = len(t)
+  logger.info("Te4 inject at %s:%s.", count/4, hex(s.addr)[2:].replace('L',''))
+  #only 256 options for the offset (from AL)
+  offset = s.regs.rax[7:0]
+  #make a new bv and assert that it equals the collected AST (save space in the list)
+  index = claripy.BVS("idx{}".format(count),8)
+  s.add_constraints(index==offset)
+  #make a new result array (just the same byte repeated 4 times)
+  result = claripy.BVS("res{}".format(count),8)
+  s.regs.rax = reduce(lambda a,x: a.concat(x), 
+            repeat(result,3), 
+            result).zero_extend(32)
+  #save the tuple for later assertions (in a z3.Function)
+  t.append((index,result))
+  s.globals['table_lookups'] = t
+
+#these instructions are a symbolic table read from Te4. they look like:
+# 0040378c  8b 04 85      MOV  EAX,[Te4 + RAX*0x4]
+#     a0 90 60 00
+p.hook(0x0040378c, Te4_lookup, length=7)
+p.hook(0x004037a5, Te4_lookup, length=7)
+p.hook(0x004037bb, Te4_lookup, length=7)
+p.hook(0x004037d1, Te4_lookup, length=7)
+```
+*Figure 9*. Overwriting the symbolic table look-ups.
+
+Because `angr` does not directly support `z3.Function`s, I had to do something a little tricky. *Figure 9* shows that when I get to one of the problem instructions, I create a new, unconstrained, symbolic, 8-bit bit-vector named `result`. I set `rax`'s value to `result` repeated four times. Finally, I save the table `index` bit-vector and `result` bit-vector so that I can assert the table values later. Asserting them during symbolic execution causes `angr` to error because it does not know how to handle a `z3.Function` during it's simplification procedures. 
+
+```python
+  #now we are going to use the tuples generated by Te4_lookup
+  # we will build a z3 function then use a symbolic index
+  # this is much faster than state.memory.load with a symbolic addr
+  z3_table = z3.Function("Te4", z3.BitVecSort(8), z3.BitVecSort(8))
+  #there is only one solver because we specified no composite solver option
+  z3_solver = s.solver._solver._get_solver()
+  #extract the Te4 table from program memory and turn it into a z3 func
+  Te4 = p.loader.find_symbol("Te4").rebased_addr
+  for i in range(256):
+    z3_solver.add(z3_table(i)==s.mem[Te4+i*4].uint8_t.concrete)
+  #for each tuple saved in Te4_lookup, convert to z3 bv then 
+  # assert that the index and result are related via the z3 function
+  for e in s.globals['table_lookups']:
+    idx, res = map(claripy.backends.z3.convert, e)
+    z3_solver.add(z3_table(idx)==res)
+  #ensure the problem is sat
+  logger.info("Checking satisfiability")
+  query = z3_solver.check()
+  logger.info(query)
+  assert(query==z3.sat)
+  logger.info("Getting model")
+  m = z3_solver.model()
+  #make our function's input a z3 bv
+  z3key = claripy.backends.z3.convert(key)
+  def long_to_str(l):
+    return hex(l)[2:].replace('L','').decode('hex')
+  resolved_key = long_to_str(m[z3key].as_long())
+  logger.info("KEY: %s", repr(resolved_key))
+  # KEY: 'ACHIEVEMENTAWARD'
+  return [resolved_key]
+```
+*Figure 10*.  Additional code for the `wall2` function defined in *Figure 6*.
+
+In *Figure 10* I revisit `wall2` to assert information about pairs saved during `Te4_lookup`. First, with the help of some folks at angr.slack.com, I extract the `z3` solver object. Next, I define a `z3.Function` for all possible 8-bit inputs: our sbox table. Then for each `idx`, `res` combination saved during `Te4_lookup` I assert that `table[idx]==res`. Again, this works because `z3.Function`s allow a symbolic argument. Finally, I check if the solver's clauses are satisfiable and extract my key from the resulting model.
+
+```
+% python solve.py
+INFO    | 2018-05-15 13:31:57,302 | solve.py | setting up sym args
+INFO    | 2018-05-15 13:31:57,309 | solve.py | starting symbolic execution on aes
+INFO    | 2018-05-15 13:32:01,868 | solve.py | Checking satisfiability
+INFO    | 2018-05-15 13:32:06,739 | solve.py | sat
+INFO    | 2018-05-15 13:32:06,740 | solve.py | Getting model
+INFO    | 2018-05-15 13:32:06,740 | solve.py | KEY: 'ACHIEVEMENTAWARD'
+% ./kingdom 174 116 ACHIEVEMENTAWARD `python -c "print ' '.join(['a']*(0xb-3))"`
+Run Program Correctly Wall destroyed...please continue (0/10)
+174, 116, 58GCD Wall destroyed - 2 achievments awarded...please continue (2/10)
+Malicious AES Wall destroyed - achievment awarded...please continue (3/10)
+Symbolic Termination Wall destroyed - achievment awarded...please continue (4/10)
+Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (6/10)
+Advanced_Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (8/10)
+```
+*Figure 11*.  `angr` passes the _Malicious AES Wall_ in 11.712 cpu seconds. This with the additional _a_'s brings us to `8` out of `10` achievements solved.
+
+### Achievements 4 through 9
+
+

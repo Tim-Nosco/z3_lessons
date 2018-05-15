@@ -50,7 +50,7 @@ def Te4_lookup(s):
 	t = s.globals.get('table_lookups',[])
 	#do some logging
 	count = len(t)
-	logger.info("Te4 inject at %s:%s.", count/4, hex(s.addr)[2:].replace('L',''))
+	logger.debug("Te4 inject at %s:%s.", count/4, hex(s.addr)[2:].replace('L',''))
 	#only 256 options for the offset (from AL)
 	offset = s.regs.rax[7:0]
 	#make a new bv and assert that it equals the collected AST (save space in the list)
@@ -128,10 +128,10 @@ def wall2():
 	return [resolved_key]
 
 argv = [p.filename]
-argv += wall1()
-# argv += ('174','116')
+# argv += wall1()
+argv += ('174','116')
 logger.info("ARGV: %s", argv)
-raw_input("Continue?")
+# raw_input("Continue?")
 argv += wall2() # ['ACHIEVEMENTAWARD']
 argv += ['a']*5
 argv += ['B'*5]
