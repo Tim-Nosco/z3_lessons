@@ -6,7 +6,7 @@ from itertools import repeat
 
 angr_logger = logging.getLogger()
 angr_logger.setLevel(logging.WARNING)
-logger = logging.getLogger('solve.py')
+logger = logging.getLogger('wall7.py')
 logging.basicConfig()
 logger.setLevel(logging.INFO)
 
@@ -54,30 +54,32 @@ def wall7():
 		s.mem[program_state_addr+0xc].uint32_t = 0
 
 		for instr in instructions:
-			logger.info("On instruction: %s", instr)
+			logger.debug("On instruction: %s", instr)
 			functions = [p.factory.callable(x,base_state=s) for x in addrs]
 			for i, f in enumerate(functions):
 				f(program_state_addr)
 				s = s.merge(f.result_state, 
 					merge_conditions=[[instr!=str(i)],[instr==str(i)]])[0]
-		return s
+		return s.mem[program_state_addr].uint32_t.resolved
 
-	s = start_state.copy()
+	c_state = start_state.copy()
 	for R1_start, goal in rounds:
 		logger.info("START: %x, GOAL: %x", R1_start, goal)
-		s = run_program(s, R1_start, instructions)
-		s.add_constraints(s.mem[program_state_addr].uint32_t.resolved==goal)
+		r = run_program(start_state.copy(), R1_start, instructions)
+		c_state.add_constraints(r==goal)
 
-	res = ''.join(s.solver.eval(x,cast_to=str) for x in instructions)
+	res = ''.join(c_state.solver.eval(x,cast_to=str) for x in instructions)
 	logger.info(res)
 
 	#sanity check
+	logger.info("Running sanity check for program synthesis")
 	s = p.factory.blank_state()
 	for R1_start, goal in rounds:
 		r = run_program(s.copy(), R1_start, res)
-		logger.info("R1: %x", r.mem[program_state_addr].uint32_t.concrete)
+		logger.info("R1: %x", s.solver.eval(r))
 		logger.info("Goal was: %x", goal)
 
 	logger.info("RES: %s", res)
-
-wall7()
+	return [res]
+if __name__ == '__main__':
+	wall7()

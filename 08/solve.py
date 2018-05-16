@@ -3,6 +3,7 @@ import logging
 import subprocess
 from functools import partial
 from itertools import repeat
+from wall7 import wall7
 
 angr_logger = logging.getLogger()
 angr_logger.setLevel(logging.WARNING)
@@ -128,11 +129,12 @@ def wall2():
 	return [resolved_key]
 
 argv = [p.filename]
-# argv += wall1()
-argv += ('174','116')
-logger.info("ARGV: %s", argv)
-# raw_input("Continue?")
-argv += wall2() # ['ACHIEVEMENTAWARD']
+argv += wall1()
+# argv += ('174','116')
+argv += wall2()
+# argv += ['ACHIEVEMENTAWARD']
 argv += ['a']*5
-argv += ['B'*5]
+argv += ['B'*3]
+argv += wall7()
+logger.info("ARGV: %s", argv)
 test_run(argv)
