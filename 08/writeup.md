@@ -1,237 +1,123 @@
+<!DOCTYPE html>
+<html>
 
-### Introduction
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome file</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
 
-The problem I considered for this exercise was kingdom: a crafted non-stripped binary designed to test symbolic execution engines. The binary contains a series of "walls" that must be solved sequentially. To the best of my knowledge, no tool has been able to automatically solve the challenges starting with only the binary code. I used a combination of automation and static analysis to work through each wall.
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="welcome-to-stackedit">Welcome to StackEdit!</h1>
+<p>Hi! I’m your first Markdown file in <strong>StackEdit</strong>. If you want to learn about StackEdit, you can read me. If you want to play with Markdown, you can edit me. If you have finished with me, you can just create new files by opening the <strong>file explorer</strong> on the left corner of the navigation bar.</p>
+<h1 id="files">Files</h1>
+<p>StackEdit stores your files in your browser, which means all your files are automatically saved locally and are accessible <strong>offline!</strong></p>
+<h2 id="create-files-and-folders">Create files and folders</h2>
+<p>The file explorer is accessible using the button in left corner of the navigation bar. You can create a new file by clicking the <strong>New file</strong> button in the file explorer. You can also create folders by clicking the <strong>New folder</strong> button.</p>
+<h2 id="switch-to-another-file">Switch to another file</h2>
+<p>All your files are listed in the file explorer. You can switch from one to another by clicking a file in the list.</p>
+<h2 id="rename-a-file">Rename a file</h2>
+<p>You can rename the current file by clicking the file name in the navigation bar or by clicking the <strong>Rename</strong> button in the file explorer.</p>
+<h2 id="delete-a-file">Delete a file</h2>
+<p>You can delete the current file by clicking the <strong>Remove</strong> button in the file explorer. The file will be moved into the <strong>Trash</strong> folder and automatically deleted after 7 days of inactivity.</p>
+<h2 id="export-a-file">Export a file</h2>
+<p>You can export the current file by clicking <strong>Export to disk</strong> in the menu. You can choose to export the file as plain Markdown, as HTML using a Handlebars template or as a PDF.</p>
+<h1 id="synchronization">Synchronization</h1>
+<p>Synchronization is one of the biggest features of StackEdit. It enables you to synchronize any file in your workspace with other files stored in your <strong>Google Drive</strong>, your <strong>Dropbox</strong> and your <strong>GitHub</strong> accounts. This allows you to keep writing on other devices, collaborate with people you share the file with, integrate easily into your workflow… The synchronization mechanism takes place every minute in the background, downloading, merging, and uploading file modifications.</p>
+<p>There are two types of synchronization and they can complement each other:</p>
+<ul>
+<li>
+<p>The workspace synchronization will sync all your files, folders and settings automatically. This will allow you to fetch your workspace on any other device.</p>
+<blockquote>
+<p>To start syncing your workspace, just sign in with Google in the menu.</p>
+</blockquote>
+</li>
+<li>
+<p>The file synchronization will keep one file of the workspace synced with one or multiple files in <strong>Google Drive</strong>, <strong>Dropbox</strong> or <strong>GitHub</strong>.</p>
+<blockquote>
+<p>Before starting to sync files, you must link an account in the <strong>Synchronize</strong> sub-menu.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="open-a-file">Open a file</h2>
+<p>You can open a file from <strong>Google Drive</strong>, <strong>Dropbox</strong> or <strong>GitHub</strong> by opening the <strong>Synchronize</strong> sub-menu and clicking <strong>Open from</strong>. Once opened in the workspace, any modification in the file will be automatically synced.</p>
+<h2 id="save-a-file">Save a file</h2>
+<p>You can save any file of the workspace to <strong>Google Drive</strong>, <strong>Dropbox</strong> or <strong>GitHub</strong> by opening the <strong>Synchronize</strong> sub-menu and clicking <strong>Save on</strong>. Even if a file in the workspace is already synced, you can save it to another location. StackEdit can sync one file with multiple locations and accounts.</p>
+<h2 id="synchronize-a-file">Synchronize a file</h2>
+<p>Once your file is linked to a synchronized location, StackEdit will periodically synchronize it by downloading/uploading any modification. A merge will be performed if necessary and conflicts will be resolved.</p>
+<p>If you just have modified your file and you want to force syncing, click the <strong>Synchronize now</strong> button in the navigation bar.</p>
+<blockquote>
+<p><strong>Note:</strong> The <strong>Synchronize now</strong> button is disabled if you have no file to synchronize.</p>
+</blockquote>
+<h2 id="manage-file-synchronization">Manage file synchronization</h2>
+<p>Since one file can be synced with multiple locations, you can list and manage synchronized locations by clicking <strong>File synchronization</strong> in the <strong>Synchronize</strong> sub-menu. This allows you to list and remove synchronized locations that are linked to your file.</p>
+<h1 id="publication">Publication</h1>
+<p>Publishing in StackEdit makes it simple for you to publish online your files. Once you’re happy with a file, you can publish it to different hosting platforms like <strong>Blogger</strong>, <strong>Dropbox</strong>, <strong>Gist</strong>, <strong>GitHub</strong>, <strong>Google Drive</strong>, <strong>WordPress</strong> and <strong>Zendesk</strong>. With <a href="http://handlebarsjs.com/">Handlebars templates</a>, you have full control over what you export.</p>
+<blockquote>
+<p>Before starting to publish, you must link an account in the <strong>Publish</strong> sub-menu.</p>
+</blockquote>
+<h2 id="publish-a-file">Publish a File</h2>
+<p>You can publish your file by opening the <strong>Publish</strong> sub-menu and by clicking <strong>Publish to</strong>. For some locations, you can choose between the following formats:</p>
+<ul>
+<li>Markdown: publish the Markdown text on a website that can interpret it (<strong>GitHub</strong> for instance),</li>
+<li>HTML: publish the file converted to HTML via a Handlebars template (on a blog for example).</li>
+</ul>
+<h2 id="update-a-publication">Update a publication</h2>
+<p>After publishing, StackEdit keeps your file linked to that publication which makes it easy for you to re-publish it. Once you have modified your file and you want to update your publication, click on the <strong>Publish now</strong> button in the navigation bar.</p>
+<blockquote>
+<p><strong>Note:</strong> The <strong>Publish now</strong> button is disabled if your file has not been published yet.</p>
+</blockquote>
+<h2 id="manage-file-publication">Manage file publication</h2>
+<p>Since one file can be published to multiple locations, you can list and manage publish locations by clicking <strong>File publication</strong> in the <strong>Publish</strong> sub-menu. This allows you to list and remove publication locations that are linked to your file.</p>
+<h1 id="markdown-extensions">Markdown extensions</h1>
+<p>StackEdit extends the standard Markdown syntax by adding extra <strong>Markdown extensions</strong>, providing you with some nice features.</p>
+<blockquote>
+<p><strong>ProTip:</strong> You can disable any <strong>Markdown extension</strong> in the <strong>File properties</strong> dialog.</p>
+</blockquote>
+<h2 id="smartypants">SmartyPants</h2>
+<p>SmartyPants converts ASCII punctuation characters into “smart” typographic punctuation HTML entities. For example:</p>
 
-### Survey
+<table>
+<thead>
+<tr>
+<th></th>
+<th>ASCII</th>
+<th>HTML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single backticks</td>
+<td><code>'Isn't this fun?'</code></td>
+<td>‘Isn’t this fun?’</td>
+</tr>
+<tr>
+<td>Quotes</td>
+<td><code>"Isn't this fun?"</code></td>
+<td>“Isn’t this fun?”</td>
+</tr>
+<tr>
+<td>Dashes</td>
+<td><code>-- is en-dash, --- is em-dash</code></td>
+<td>– is en-dash, — is em-dash</td>
+</tr>
+</tbody>
+</table><h2 id="katex">KaTeX</h2>
+<p>You can render LaTeX mathematical expressions using <a href="https://khan.github.io/KaTeX/">KaTeX</a>:</p>
+<p>The <em>Gamma function</em> satisfying <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Γ</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo><mo>!</mo><mspace width="1em"></mspace><mi mathvariant="normal">∀</mi><mi>n</mi><mo>∈</mo><mi mathvariant="double-struck">N</mi></mrow><annotation encoding="application/x-tex">\Gamma(n) = (n-1)!\quad\forall n\in\mathbb N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height: 0.75em;"></span><span class="strut bottom" style="height: 1em; vertical-align: -0.25em;"></span><span class="base"><span class="mord mathrm">Γ</span><span class="mopen">(</span><span class="mord mathit">n</span><span class="mclose">)</span><span class="mrel">=</span><span class="mopen">(</span><span class="mord mathit">n</span><span class="mbin">−</span><span class="mord mathrm">1</span><span class="mclose">)</span><span class="mclose">!</span><span class="mord mathrm"><span class="mspace quad"></span><span class="mord mathrm">∀</span></span><span class="mord mathit">n</span><span class="mrel">∈</span><span class="mord mathbb">N</span></span></span></span></span> is via the Euler integral</p>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Γ</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi mathvariant="normal">∞</mi></msubsup><msup><mi>t</mi><mrow><mi>z</mi><mo>−</mo><mn>1</mn></mrow></msup><msup><mi>e</mi><mrow><mo>−</mo><mi>t</mi></mrow></msup><mi>d</mi><mi>t</mi><mspace width="0.16667em"></mspace><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}dt\,.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height: 1.41429em;"></span><span class="strut bottom" style="height: 2.32624em; vertical-align: -0.91195em;"></span><span class="base"><span class="mord mathrm">Γ</span><span class="mopen">(</span><span class="mord mathit" style="margin-right: 0.04398em;">z</span><span class="mclose">)</span><span class="mrel">=</span><span class="mop"><span class="mop op-symbol large-op" style="margin-right: 0.44445em; position: relative; top: -0.001125em;">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 1.41429em;"><span class="" style="top: -1.78805em; margin-left: -0.44445em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">0</span></span></span><span class="" style="top: -3.8129em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">∞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.91195em;"></span></span></span></span></span><span class="mord"><span class="mord mathit">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.864108em;"><span class="" style="top: -3.113em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight" style="margin-right: 0.04398em;">z</span><span class="mbin mtight">−</span><span class="mord mathrm mtight">1</span></span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathit">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.843556em;"><span class="" style="top: -3.113em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathit mtight">t</span></span></span></span></span></span></span></span></span><span class="mord mathit">d</span><span class="mord mathit">t</span><span class="mord mathrm"><span class="mspace thinspace"></span><span class="mord mathrm">.</span></span></span></span></span></span></span></p>
+<blockquote>
+<p>You can find more information about <strong>LaTeX</strong> mathematical expressions <a href="http://meta.math.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference">here</a>.</p>
+</blockquote>
+<h2 id="uml-diagrams">UML diagrams</h2>
+<p>You can render UML diagrams using <a href="https://mermaidjs.github.io/">Mermaid</a>. For example, this will produce a sequence diagram:</p>
+<div class="mermaid"><svg xmlns="http://www.w3.org/2000/svg" id="mermaid-svg-rkw2V3N37fs6QFh0" height="100%" width="100%" style="max-width:750px;" viewBox="-50 -10 750 484"><g></g><g><line id="actor3" x1="75" y1="5" x2="75" y2="473" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="75" y="32.5" style="text-anchor: middle;" dominant-baseline="central" alignment-baseline="central" class="actor"><tspan x="75" dy="0">Alice</tspan></text></g><g><line id="actor4" x1="275" y1="5" x2="275" y2="473" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="200" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="275" y="32.5" style="text-anchor: middle;" dominant-baseline="central" alignment-baseline="central" class="actor"><tspan x="275" dy="0">Bob</tspan></text></g><g><line id="actor5" x1="475" y1="5" x2="475" y2="473" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="400" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="475" y="32.5" style="text-anchor: middle;" dominant-baseline="central" alignment-baseline="central" class="actor"><tspan x="475" dy="0">John</tspan></text></g><defs><marker id="arrowhead" refX="5" refY="2" markerWidth="6" markerHeight="4" orient="auto"><path d="M 0,0 V 4 L6,2 Z"></path></marker></defs><defs><marker id="crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="16" refY="4"><path fill="black" stroke="#000000" stroke-width="1px" d="M 9,2 V 6 L16,4 Z" style="stroke-dasharray: 0, 0;"></path><path fill="none" stroke="#000000" stroke-width="1px" d="M 0,1 L 6,7 M 6,1 L 0,7" style="stroke-dasharray: 0, 0;"></path></marker></defs><g><text x="175" y="93" class="messageText" style="text-anchor: middle;">Hello Bob, how are you?</text><line x1="75" y1="100" x2="275" y2="100" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><text x="375" y="128" class="messageText" style="text-anchor: middle;">How about you John?</text><line x1="275" y1="135" x2="475" y2="135" class="messageLine1" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"></line></g><g><text x="175" y="163" class="messageText" style="text-anchor: middle;">I am good thanks!</text><line x1="275" y1="170" x2="75" y2="170" class="messageLine1" stroke-width="2" stroke="black" marker-end="url(#crosshead)" style="stroke-dasharray: 3, 3; fill: none;"></line></g><g><text x="375" y="198" class="messageText" style="text-anchor: middle;">I am good thanks!</text><line x1="275" y1="205" x2="475" y2="205" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#crosshead)" style="fill: none;"></line></g><g><rect x="500" y="215" fill="#EDF2AE" stroke="#666" width="150" height="103" rx="0" ry="0" class="note"></rect><text x="516" y="245" fill="black" class="noteText"><tspan x="516">Bob thinks a long</tspan><tspan dy="23" x="516">long time, so long</tspan><tspan dy="23" x="516">that the text does</tspan><tspan dy="23" x="516">not fit on a row.</tspan></text></g><g><text x="175" y="346" class="messageText" style="text-anchor: middle;">Checking with John...</text><line x1="275" y1="353" x2="75" y2="353" class="messageLine1" stroke-width="2" stroke="black" style="stroke-dasharray: 3, 3; fill: none;"></line></g><g><text x="275" y="381" class="messageText" style="text-anchor: middle;">Yes... John, how are you?</text><line x1="75" y1="388" x2="475" y2="388" class="messageLine0" stroke-width="2" stroke="black" style="fill: none;"></line></g><g><rect x="0" y="408" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="75" y="440.5" style="text-anchor: middle;" dominant-baseline="central" alignment-baseline="central" class="actor"><tspan x="75" dy="0">Alice</tspan></text></g><g><rect x="200" y="408" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="275" y="440.5" style="text-anchor: middle;" dominant-baseline="central" alignment-baseline="central" class="actor"><tspan x="275" dy="0">Bob</tspan></text></g><g><rect x="400" y="408" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="475" y="440.5" style="text-anchor: middle;" dominant-baseline="central" alignment-baseline="central" class="actor"><tspan x="475" dy="0">John</tspan></text></g></svg></div>
+<p>And this will produce a flow chart:</p>
+<div class="mermaid"><svg xmlns="http://www.w3.org/2000/svg" id="mermaid-svg-nuUlL5vGeRyNbYma" height="100%" viewBox="0 0 531.1218719482422 215.890625" style="max-width:531.1218719482422px;"><g><g class="output"><g class="clusters"></g><g class="edgePaths"><g class="edgePath" style="opacity: 1;"><path class="path" d="M119.91170576572816,78.41796875L179.3203125,49.9453125L255.2578125,49.9453125" marker-end="url(#arrowhead33)" style="fill:none"></path><defs><marker id="arrowhead33" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath" style="opacity: 1;"><path class="path" d="M119.91170576572816,124.41796875L179.3203125,152.890625L234.796875,152.890625" marker-end="url(#arrowhead34)" style="fill:none"></path><defs><marker id="arrowhead34" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath" style="opacity: 1;"><path class="path" d="M315.1484375,49.9453125L360.609375,49.9453125L407.12250953976667,80.90483573611228" marker-end="url(#arrowhead35)" style="fill:none"></path><defs><marker id="arrowhead35" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath" style="opacity: 1;"><path class="path" d="M335.609375,152.890625L360.609375,152.890625L407.12250770354245,122.93110297942131" marker-end="url(#arrowhead36)" style="fill:none"></path><defs><marker id="arrowhead36" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g></g><g class="edgeLabels"><g class="edgeLabel" style="opacity: 1;" transform="translate(179.3203125,49.9453125)"><g transform="translate(-30.4765625,-13)" class="label"><foreignObject width="60.953125" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span class="edgeLabel">Link text</span></div></foreignObject></g></g><g class="edgeLabel" style="opacity: 1;" transform=""><g transform="translate(0,0)" class="label"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" style="opacity: 1;" transform=""><g transform="translate(0,0)" class="label"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" style="opacity: 1;" transform=""><g transform="translate(0,0)" class="label"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node" style="opacity: 1;" id="A" transform="translate(71.921875,101.41796875)"><rect rx="0" ry="0" x="-51.921875" y="-23" width="103.84375" height="46"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-41.921875,-13)"><foreignObject width="83.84375" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Square Rect</div></foreignObject></g></g></g><g class="node" style="opacity: 1;" id="B" transform="translate(285.203125,49.9453125)"><circle x="-29.9453125" y="-23" r="29.9453125"></circle><g class="label" transform="translate(0,0)"><g transform="translate(-19.9453125,-13)"><foreignObject width="39.890625" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Circle</div></foreignObject></g></g></g><g class="node" style="opacity: 1;" id="C" transform="translate(285.203125,152.890625)"><rect rx="5" ry="5" x="-50.40625" y="-23" width="100.8125" height="46"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-40.40625,-13)"><foreignObject width="80.8125" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Round Rect</div></foreignObject></g></g></g><g class="node" style="opacity: 1;" id="D" transform="translate(438.3656234741211,101.41796875)"><polygon points="52.75625,0 105.5125,-52.75625 52.75625,-105.5125 0,-52.75625" rx="5" ry="5" transform="translate(-52.75625,52.75625)"></polygon><g class="label" transform="translate(0,0)"><g transform="translate(-32.9453125,-13)"><foreignObject width="65.890625" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Rhombus</div></foreignObject></g></g></g></g></g></g></svg></div>
+</div>
+</body>
 
-The first thing I did when auditing kingdom was to look at the decompilation. *Figure 1* shows the natural auditing start point, `main`.
-
-```c
-int main(int argc,char **argv){
-  char cVar1;
-  uint8_t uVar2;
-  int iVar3;
-  ulong uVar4;
-  
-  if (argc == 0xc) {
-    fprintf(stderr,"Run Program Correctly Wall destroyed...please continue (%u/%u)\n",0,10);
-    uVar2 = gcd_test(argv[1],argv[2]);
-    if (uVar2 == 3) {
-      fprintf(stderr,"GCD Wall destroyed - 2 achievments awarded...please continue (%u/%u)\n",2,10);
-      uVar2 = malicious_aes_test(argv[3]);
-      if (uVar2 == 3) {
-        fprintf(stderr,
-                "Malicious AES Wall destroyed - achievment awarded...please continue (%u/%u)\n",3,10
-               );
-...
-```
-*Figure 1.* The main function of kingdom.
-
-Immediately apparent in `main` is the requirement that `argv` must have `0xc` many elements: `argc==0xc`. Running the program as in *Figure 2* causes us to get past this check.
-
-```
-% ./kingdom `python -c "print ' '.join(['a']*0xb)"`
-Run Program Correctly Wall destroyed...please continue (0/10)
-```
-*Figure 2.* Passing achievements `0` of `10`.
-
-### GCD
-
-For this wall, I had to reason about the function symbol `gcd_test`. This function takes two arguments and converts them to integers. It asserts that neither are equal to `0x3a` and that the second is not equal to `0`.  Then `gcd_test` calls a new symbol, `gcd` on the converted arguments. If the return value of `gcd` is `0x3a`, we print the string "_GCD Wall destroyed ..._" from *Figure 1*.
-
-```c
-uint8_t gcd(uint8_t a,uint8_t b){
-  if (b != 0) {
-    a = gcd(b,a % b);
-  }
-  return a;
-}
-```
-*Figure 3.* The function symbol `gcd`.
-
-While I'm sure it should be fairly easy to come up with two numbers who share a `gcd` of `0x3a`, it was also quite easy to just have `angr` figure out this function for me.
-
-```python
-def wall1():
-  #setup the arguments
-  arg1, arg2 = [claripy.BVS("arg{}".format(i), 8) for i in (1,2)]
-  s = p.factory.blank_state()
-  #program asserts the args cannot be a trivial solution
-  s.add_constraints(arg1!=0x3a, arg2!=0x3a)
-  #lookup gcd address
-  gcd_addr = p.loader.find_symbol('gcd').rebased_addr
-  gcd = p.factory.callable(gcd_addr, base_state=s)
-  logger.info("starting symbolic execution: gcd(%s, %s)",arg1,arg2)
-  r = gcd(arg1,arg2)
-  s = gcd.result_state
-  s.add_constraints(r==0x3a)
-  logger.info("evaluating arguments")
-  return map(str,(s.solver.eval(arg1), s.solver.eval(arg2))
-```
-*Figure 4.* The `angr` solution to the gcd wall. After 15.798 cpu seconds, `angr` returns the results `174` and `116`.
-
-In the function shown in *Figure 4*, I first define two 8-bit symbolic bit vectors called `arg1` and `arg2`. Then I create an empty state object from which I will begin symbolic execution. I assert that neither `arg1` nor `arg2` can be the trivial solution `0x3a`. Next, I find the `gcd` function in the kingdom binary and wrap it in a python callable object. `gcd(arg1,arg2)` kicks off the symbolic execution of `gcd`. When the symbolic execution completes, I extract the resulting state. `angr` builds this state by merging all returning paths through the program. Next, I assert that the return value of my `gcd` call must be `0x3a`. The last step is to ask the SMT solver -- `z3` in this case -- to find a satisfying `arg1` and `arg2` to the constraints defined in the symbolic state.
-
-I was happy to see that `angr` could reason about this `gcd` function as a successful symbolic execution required `angr` to do frequent state merging and reason about symbolic termination. The reason I began symbolic execution at `gcd` instead of `gcd_test`, however, is because `angr` is not as good at reasoning about things like `atoi` and `strlen`. Both of these functions are used in `gcd_test` to convert the string arguments into integers for `gcd`. With these `SimProcedures` -- as `angr` calls them -- a common strategy is to evaluate the input arguments into concrete values, run the procedure, then continue simulating from the concrete state. This is not ideal for our analysis and given the choice between writing a fully symbolic `SimProcedure` or working backwards through `atoi`, I chose the latter. 
-
-```
-% ./kingdom 174 116 `python -c "print ' '.join(['a']*(0xb-2))"`
-Run Program Correctly Wall destroyed...please continue (0/10)
-174, 116, 58GCD Wall destroyed - 2 achievments awarded...please continue (2/10)
-```
-*Figure 5.* Passing `2` achievements of `10`.
-
-### AES Key Expansion
-
-For this next wall, I attempted to symbolically execute `malicious_aes_test`, called from `main` in *Figure 1*. This function requires the player to reverse a key that has undergone the AES key expansion procedure. I set up a script as in *Figure 6*.
-
-```python
-def wall2():
-  #setup the key to expand
-  logger.info("setting up sym args")
-  key = claripy.BVS('key', 8*16)
-  keyarr = [key.get_byte(i) for i in range(16)]
-  #Make sure angr only uses 1 solver
-  s = p.factory.blank_state(remove_options={angr.options.COMPOSITE_SOLVER})
-  s.add_constraints(*[k!='\0' for k in keyarr])
-
-  logger.info("starting symbolic execution on aes") 
-  aes_addr = p.loader.find_symbol('malicious_aes_test').rebased_addr
-  aes = p.factory.callable(aes_addr, base_state=s)
-  #when calling the function, use the python list so angr makes a pointer
-  r = aes(keyarr)
-  s = aes.result_state
-  s.add_constraints(r==3)
-  
-  # CONTINUED IN FIGURE 10.
-```
-*Figure 6*. Attempting to solve the _Malicious AES Wall_.
-
-Unfortunately, this code did not pass the "Coffee Test". The "Coffee Test" describes when you begin a symbolic execution or SAT query, get up from the computer to get a cup of coffee and return to see whether your query has completed or not. If it has not completed, it is unlikely to complete in a reasonable amount of time.
-
-To discover the issue, I enabled `DEBUG` logging on `angr`. I found that the symbolic execution would spend an extraordinary time in the solver after the block ending at address `0x00403855`. This block does quite a few things, but intuition (and a bit of nudging from my adviser) told me the issue would be symbolic look-ups into the AES substitution-box. This table has the symbol `Te4` in this binary. The problem instruction is replicated in *Figure 7*. Four instructions in the problem block take the same form.
-
-```
-0040378c 8b 04 85        MOV        EAX,[Te4 + RAX*0x4]
-         a0 90 60 00
-```
-*Figure 7*. The symbolic addressing in `malicious_aes_test`.
-
-So I needed a better way to do the symbolic execution for this instruction. Fortunately, `angr` allows me to overwrite any arbitrary part of the execution with my own python code. I had to sleep on the problem for a day to come up with how I could be more efficient than `angr`, though. The solution I thought of was to compare `angr`'s symbolic addressing to another symbolic execution engine named `cryptol`. I chose this platform because someone had already programmed the AES key expand algorithm in their domain specific language. `cryptol` was easily able to reverse the key expansion and did so in a matter of seconds. *Figure 8* demonstrates this experiment.
-
-```cryptol
-AES> :sat \key -> join (join (transpose (ExpandKey key).2)) == 0x048a97a0ac9a53b7d37fd65b15cf1362
-  0x414348494556454d454e544157415244 = True
-(Total Elapsed Time: 9.497s, using Z3)
-```
-*Figure 8*. Reversing AES key expansion. The solver returned in 9.497 cpu seconds.
-
-By running `:s prover=offline`, I had `cryptol` dump the `smtlib2`. `cryptol` builds a `z3.Function` that accepts an 8-bit bit-vector as an argument and returns an 8-bit bit-vector. The benefit to building the sbox table this way is that `z3.Function`s support symbolic arguments. Apparently, it does this much more efficiently than `angr`. I should provide one final note on `cryptol` before I continue. The fact that `cryptol` can perform this reversal so quickly is not a fair comparison to `angr` because someone had to write `cryptol` code for the AES Key Expansion procedure. `angr` lifts binary code and does analysis on that. This almost always results in a significantly more complicated problem than hand-written formal verification code. In order to solve this AES wall with `cryptol`, I would have to re-write the entire AES Key Expansion procedure. For `angr`, on the other hand, I only need to overwrite the `MOV` in *Figure 7*.
-
-```python
-def Te4_lookup(s):
-  #use the global list to save offset/result pairs
-  t = s.globals.get('table_lookups',[])
-  #do some logging
-  count = len(t)
-  logger.info("Te4 inject at %s:%s.", count/4, hex(s.addr)[2:].replace('L',''))
-  #only 256 options for the offset (from AL)
-  offset = s.regs.rax[7:0]
-  #make a new bv and assert that it equals the collected AST (save space in the list)
-  index = claripy.BVS("idx{}".format(count),8)
-  s.add_constraints(index==offset)
-  #make a new result array (just the same byte repeated 4 times)
-  result = claripy.BVS("res{}".format(count),8)
-  s.regs.rax = reduce(lambda a,x: a.concat(x), 
-            repeat(result,3), 
-            result).zero_extend(32)
-  #save the tuple for later assertions (in a z3.Function)
-  t.append((index,result))
-  s.globals['table_lookups'] = t
-
-#these instructions are a symbolic table read from Te4. they look like:
-# 0040378c  8b 04 85      MOV  EAX,[Te4 + RAX*0x4]
-#     a0 90 60 00
-p.hook(0x0040378c, Te4_lookup, length=7)
-p.hook(0x004037a5, Te4_lookup, length=7)
-p.hook(0x004037bb, Te4_lookup, length=7)
-p.hook(0x004037d1, Te4_lookup, length=7)
-```
-*Figure 9*. Overwriting the symbolic table look-ups.
-
-Because `angr` does not directly support `z3.Function`s, I had to do something a little tricky. *Figure 9* shows that when I get to one of the problem instructions, I create a new, unconstrained, symbolic, 8-bit bit-vector named `result`. I set `rax`'s value to `result` repeated four times. Finally, I save the table `index` bit-vector and `result` bit-vector so that I can assert the table values later. Asserting them during symbolic execution causes `angr` to error because it does not know how to handle a `z3.Function` during it's simplification procedures. 
-
-```python
-  #now we are going to use the tuples generated by Te4_lookup
-  # we will build a z3 function then use a symbolic index
-  # this is much faster than state.memory.load with a symbolic addr
-  z3_table = z3.Function("Te4", z3.BitVecSort(8), z3.BitVecSort(8))
-  #there is only one solver because we specified no composite solver option
-  z3_solver = s.solver._solver._get_solver()
-  #extract the Te4 table from program memory and turn it into a z3 func
-  Te4 = p.loader.find_symbol("Te4").rebased_addr
-  for i in range(256):
-    z3_solver.add(z3_table(i)==s.mem[Te4+i*4].uint8_t.concrete)
-  #for each tuple saved in Te4_lookup, convert to z3 bv then 
-  # assert that the index and result are related via the z3 function
-  for e in s.globals['table_lookups']:
-    idx, res = map(claripy.backends.z3.convert, e)
-    z3_solver.add(z3_table(idx)==res)
-  #ensure the problem is sat
-  logger.info("Checking satisfiability")
-  query = z3_solver.check()
-  logger.info(query)
-  assert(query==z3.sat)
-  logger.info("Getting model")
-  m = z3_solver.model()
-  #make our function's input a z3 bv
-  z3key = claripy.backends.z3.convert(key)
-  def long_to_str(l):
-    return hex(l)[2:].replace('L','').decode('hex')
-  resolved_key = long_to_str(m[z3key].as_long())
-  logger.info("KEY: %s", repr(resolved_key))
-  # KEY: 'ACHIEVEMENTAWARD'
-  return [resolved_key]
-```
-*Figure 10*.  Additional code for the `wall2` function defined in *Figure 6*.
-
-In *Figure 10* I revisit `wall2` to assert information about pairs saved during `Te4_lookup`. First, with the help of some folks at angr.slack.com, I extract the `z3` solver object. Next, I define a `z3.Function` for all possible 8-bit inputs: our sbox table. Then for each `idx`, `res` combination saved during `Te4_lookup` I assert that `table[idx]==res`. Again, this works because `z3.Function`s allow a symbolic argument. Finally, I check if the solver's clauses are satisfiable and extract my key from the resulting model.
-
-```
-% python solve.py
-INFO    | 2018-05-15 13:31:57,302 | solve.py | setting up sym args
-INFO    | 2018-05-15 13:31:57,309 | solve.py | starting symbolic execution on aes
-INFO    | 2018-05-15 13:32:01,868 | solve.py | Checking satisfiability
-INFO    | 2018-05-15 13:32:06,739 | solve.py | sat
-INFO    | 2018-05-15 13:32:06,740 | solve.py | Getting model
-INFO    | 2018-05-15 13:32:06,740 | solve.py | KEY: 'ACHIEVEMENTAWARD'
-% ./kingdom 174 116 ACHIEVEMENTAWARD `python -c "print ' '.join(['a']*(0xb-3))"`
-Run Program Correctly Wall destroyed...please continue (0/10)
-174, 116, 58GCD Wall destroyed - 2 achievments awarded...please continue (2/10)
-Malicious AES Wall destroyed - achievment awarded...please continue (3/10)
-Symbolic Termination Wall destroyed - achievment awarded...please continue (4/10)
-Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (6/10)
-Advanced_Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (8/10)
-```
-*Figure 11*.  `angr` passes the _Malicious AES Wall_ in 11.712 cpu seconds. This with the additional _a_'s brings us to `8` out of `10` achievements solved.
-
-### Achievements 4 through 9
-
-As demonstrated in *Figure 11*, my very simple fuzzing (all _a_'s) got us through some fairly tricky challenges. I did not test `angr`'s performance on these due to the significant time investment in the _Malicious AES Wall_. For the 9th achievement, I looked at the `exploitmealso` function symbol. To pass achievement `9` of `10`, `exploitmealso` must return `B`. It is immediately apparent to me that this function copies its arguments into a 1-byte buffer, and the return value is stored above this buffer on the stack. Without much more analysis, I tried passing a few `B`s and passed the wall.
-
-```
-% ./kingdom 174 116 ACHIEVEMENTAWARD `python -c "print ' '.join(['a']*5+['B'*5]+['a']*2)"`
-Run Program Correctly Wall destroyed...please continue (0/10)
-174, 116, 58GCD Wall destroyed - 2 achievments awarded...please continue (2/10)
-Malicious AES Wall destroyed - achievment awarded...please continue (3/10)
-Symbolic Termination Wall destroyed - achievment awarded...please continue (4/10)
-Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (6/10)
-Advanced_Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (8/10)
-Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
-```
-*Figure 12*. Passing achievements `9` of `10`.
-
-### Conclusion
-
-`angr` made the _Malicious AES Wall_ much easier than manually reversing the math done during key expansion. It solved _GCD_ quickly once I started past the `atoi` and `strlen` calls. Overall, the combination of manual analysis and automated analysis was more effective than either alone.
+</html>
