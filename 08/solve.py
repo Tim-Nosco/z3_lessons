@@ -129,12 +129,13 @@ def wall2():
 	return [resolved_key]
 
 argv = [p.filename]
-argv += wall1()
-# argv += ('174','116')
-argv += wall2()
-# argv += ['ACHIEVEMENTAWARD']
+# argv += wall1()
+argv += ('174','116')
+# argv += wall2()
+argv += ['ACHIEVEMENTAWARD']
 argv += ['a']*5
 argv += ['B'*3]
-argv += wall7()
+# argv += wall7()
+argv += ['1203203203203203203203203']
 logger.info("ARGV: %s", argv)
 test_run(argv)

@@ -37,11 +37,11 @@ def wall7():
 	#extracted r1 start values and r1 end values from the binary
 	CRC32Table = p.loader.find_symbol("CRC32Table").rebased_addr
 	table_lookup = lambda x: start_state.mem[CRC32Table+x].uint32_t.concrete
-	rounds = [	(0x00, table_lookup(0x000))
+	rounds = [	(0x00, table_lookup(0x000)),
 				(0x48, table_lookup(0x120)),
 				(0x58, table_lookup(0x160)),
 				(0xc0, table_lookup(0x300)),
-				(0xff, table_lookup(0x3fc))]
+				(0xff, table_lookup(0x3fc))	]
 
 	def run_program(s, R1_start, instructions):
 		#initialize the program_state struct
