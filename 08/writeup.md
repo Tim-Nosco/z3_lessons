@@ -223,7 +223,7 @@ Advanced_Control Flow Merging Wall destroyed - 2 achievments awarded...please co
 
 ### Achievements 4 through 9
 
-As demonstrated in *Figure 11*, my very simple fuzzing (all _a_'s) got us through some fairly tricky challenges. I did not test `angr`'s performance on these due to the significant time investment in the _Malicious AES Wall_. For the 9th achievement, I looked at the `exploitmealso` function symbol. To pass achievement `9` of `10`, `exploitmealso` must return `B`. It is immediately apparent to me that this function copies its arguments into a 1-byte buffer, and the return value is stored above this buffer on the stack. Without much more analysis, I tried passing a few `B`s and passed the wall.
+As demonstrated in *Figure 11*, my very simple fuzzing (all _a_'s) got us through some fairly tricky challenges. I did not test `angr`'s performance on these due to the significant time investment in the _Malicious AES Wall_. For the 9th achievement, I looked at the `exploitmealso` function symbol. To pass achievement `9` of `10`, `exploitmealso` must return `B`. It is immediately apparent to me that this function copies its argument into a 1-byte buffer, and the return value is stored above this buffer on the stack. Without much more analysis, I tried passing a few `B`s and passed the wall.
 
 ```
 % ./kingdom 174 116 ACHIEVEMENTAWARD `python -c "print ' '.join(['a']*5+['B'*5]+['a']*2)"`
@@ -239,7 +239,7 @@ Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
 
 ### Program Synthesis
 
-The last challenge of kingdom is to get z3 to write a program for me. The function symbol for this wall is `crc32_test` and it turns out it wants me to provide a program that generates the `crc32` table. *Figure 13* shows the four functions we have at our disposal. 
+The last challenge of kingdom is to get z3 to sketch a program for me. The function symbol for this wall is `crc32_test` and it turns out it wants me to provide a program that generates the `crc32` table. *Figure 13* shows the four functions we have at our disposal. 
 
 ```c
 void R1_shiftl_1(program_state *curr_state){
@@ -286,7 +286,7 @@ def run_program(s, R1_start, instructions):
 ```
 *Figure 14*. This function runs a set of symbolic instructions given a concrete starting state.
 
-The function in *Figure 14* does something subtle but nice for my analysis. The state merging allows me to only inspect the `program_state` memory once all instructions are completed. *Figure 15* shows that I require no program run can modify the state that collects our program output assertions (held in `c_state`). This ensures that each `run_program` call is independent and _SIGNIFICANTLY_ faster than if a single, continuously updated state held the constraints for all runs.
+The function in *Figure 14* does something subtle but nice for my analysis. The state merging allows me to only inspect the `program_state` memory once all instructions are completed. *Figure 15* shows that I require no `run_program` call can modify `c_state` -- the state that collects our program output assertions. This ensures that each `run_program` call is independent and _SIGNIFICANTLY_ faster than if a single, continuously updated state held the constraints for all runs.
 
 ```python
 #c_state will collect all the goal constraints for our final eval
