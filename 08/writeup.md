@@ -267,7 +267,7 @@ def run_program(s, R1_start, instructions):
 ```
 *Figure 14*. This function runs a set of symbolic instructions given a concrete starting state.
 
-The function in *Figure 14* does something subtle but nice for my analysis. The state merging allows me to only inspect the `program_state` memory once all instructions are completed.  There is another key thing that helps my analysis as well. *Figure 15* shows that I ensure no program run can modify the state that collects our program output assertions (held in `c_state`). This ensures that each `run_program` call is independent and _SIGNIFICANTLY_ faster than if a single state held the constraints for all runs.
+The function in *Figure 14* does something subtle but nice for my analysis. The state merging allows me to only inspect the `program_state` memory once all instructions are completed. *Figure 15* shows that I require no program run can modify the state that collects our program output assertions (held in `c_state`). This ensures that each `run_program` call is independent and _SIGNIFICANTLY_ faster than if a single, continuously updated state held the constraints for all runs.
 
 ```python
 #c_state will collect all the goal constraints for our final eval
@@ -285,5 +285,5 @@ for R1_start, goal in rounds:
 
 ### Conclusion
 
-`angr` made the _Malicious AES Wall_ much easier than manually reversing the math done during key expansion. It solved _GCD_ quickly once I started past the `atoi` and `strlen` calls. I'm not sure I could have ever solved the program synthesis wall by myself. `angr` failed solving the wall by itself. Overall, the combination of manual analysis and automated analysis was more effective than either alone.
+`angr` made the _Malicious AES Wall_ much easier than manually reversing the math done during key expansion. It solved _GCD_ quickly once I started past the `atoi` and `strlen` calls. I'm not sure I could have ever solved the program synthesis wall by myself and `angr` failed solving the wall by itself. Overall, the combination of manual analysis and automated analysis was more effective than either alone.
 
