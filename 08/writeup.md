@@ -63,12 +63,15 @@ def wall1():
   s.add_constraints(arg1!=0x3a, arg2!=0x3a)
   #lookup gcd address
   gcd_addr = p.loader.find_symbol('gcd').rebased_addr
+  #make a gcd python callable function
   gcd = p.factory.callable(gcd_addr, base_state=s)
   logger.info("starting symbolic execution: gcd(%s, %s)",arg1,arg2)
   r = gcd(arg1,arg2)
   s = gcd.result_state
+  #assert that the return value is what gcd_test requires
   s.add_constraints(r==0x3a)
   logger.info("evaluating arguments")
+  #undo atoi by converting the arguments to strings
   return map(str,(s.solver.eval(arg1), s.solver.eval(arg2))
 ```
 *Figure 4.* The `angr` solution to the gcd wall. After 15.798 cpu seconds, `angr` returns the results `174` and `116`.
@@ -239,7 +242,20 @@ Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
 The last challenge of kingdom is to get z3 to write a program for me. The function symbol for this wall is `crc32_test` and it turns out it wants me to provide a program that generates the `crc32` table. *Figure 13* shows the four functions we have at our disposal. 
 
 ```c
-TODO
+void R1_shiftl_1(program_state *curr_state){
+  curr_state->R1 = curr_state->R1 * 2;
+}
+void R1_shiftl_24(program_state *curr_state){
+  curr_state->R1 = curr_state->R1 << 0x18;
+}
+void R2_equals_R1_and_0x80000000(program_state *curr_state){
+  curr_state->R2 = curr_state->R1 & 0x80000000;
+}
+void if_R2_le_zero_R1_equals_R1_xor_R3_else_R1(program_state *curr_state){
+  if (curr_state->R2 != 0) {
+    curr_state->R1 = curr_state->R1 ^ curr_state->R3;
+  }
+}
 ```
 *Figure 13*. The four basic blocks for our program.
 
