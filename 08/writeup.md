@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html>
+---
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>writeup</title>
-  <link rel="stylesheet" href="https://stackedit.io/style.css" />
-</head>
 
-<body class="stackedit">
-  <div class="stackedit__html"><h3 id="introduction">Introduction</h3>
+---
+
+<h3 id="introduction">Introduction</h3>
 <p>The problem I considered for this exercise was kingdom: a crafted non-stripped binary designed to test symbolic execution engines. The binary contains a series of “walls” that must be solved sequentially. To the best of my knowledge, no tool has been able to automatically solve the challenges starting with only the binary code. I used a combination of automation and static analysis to work through each wall.</p>
 <h3 id="survey">Survey</h3>
 <p>The first thing I did when auditing kingdom was to look at the decompilation. <em>Figure 1</em> shows the natural auditing start point, <code>main</code>.</p>
@@ -201,7 +195,4 @@ Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
 <h3 id="program-synthesis">Program Synthesis</h3>
 <h3 id="conclusion">Conclusion</h3>
 <p><code>angr</code> made the <em>Malicious AES Wall</em> much easier than manually reversing the math done during key expansion. It solved <em>GCD</em> quickly once I started past the <code>atoi</code> and <code>strlen</code> calls. Overall, the combination of manual analysis and automated analysis was more effective than either alone.</p>
-</div>
-</body>
 
-</html>
