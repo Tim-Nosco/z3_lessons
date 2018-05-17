@@ -236,7 +236,7 @@ Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
 The last challenge of kingdom is to get z3 to write a program for me. The function symbol for this wall is `crc32_test` and it turns out it wants me to provide a program that generates the `crc32` table. *Figure 13* shows the four functions we have at our disposal. 
 
 ```c
-
+TODO
 ```
 *Figure 13*. The four basic blocks for our program.
 
@@ -281,7 +281,7 @@ for R1_start, goal in rounds:
 	#assert the result must be our goal value
 	c_state.add_constraints(r==goal)
 ```
-*Figure 15*. Shows the code that calls `run_program`. After ____ cpu seconds, `angr` solved wall `7` and achieved `10` of `10` achievements!
+*Figure 15*. Shows the code that calls `run_program`. After TODO cpu seconds, `angr` solved wall `7` and achieved `10` of `10` achievements!
 
 ### Conclusion
 
