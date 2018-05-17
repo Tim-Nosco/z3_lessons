@@ -198,6 +198,7 @@ Advanced_Control Flow Merging Wall destroyed - 2 achievments awarded...please co
 Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
 </code></pre>
 <p><em>Figure 12</em>. Passing achievements <code>9</code> of <code>10</code>.</p>
+<h3 id="program-synthesis">Program Synthesis</h3>
 <h3 id="conclusion">Conclusion</h3>
 <p><code>angr</code> made the <em>Malicious AES Wall</em> much easier than manually reversing the math done during key expansion. It solved <em>GCD</em> quickly once I started past the <code>atoi</code> and <code>strlen</code> calls. Overall, the combination of manual analysis and automated analysis was more effective than either alone.</p>
 </div>
