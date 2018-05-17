@@ -1,3 +1,5 @@
+# A Centaur With `angr`
+#### Tim Nosco
 ### Introduction
 
 The problem I considered for this exercise was kingdom: a crafted non-stripped binary designed to test symbolic execution engines. The binary contains a series of "walls" that must be solved sequentially. To the best of my knowledge, no tool has been able to automatically solve the challenges starting with only the binary code. I used a combination of automation and static analysis to work through each wall.
