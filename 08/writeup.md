@@ -283,7 +283,42 @@ for R1_start, goal in rounds:
 	#assert the result must be our goal value
 	c_state.add_constraints(r==goal)
 ```
-*Figure 15*. Shows the code that calls `run_program`. After TODO cpu seconds, `angr` solved wall `7` and achieved `10` of `10` achievements!
+*Figure 15*. Shows the code that calls `run_program`. After 175.19 cpu seconds, `angr` solved wall the program synthesis wall.
+
+```
+% time python wall7.py
+INFO    | 2018-05-16 21:02:01,003 | wall7.py | START: 0, GOAL: 0
+INFO    | 2018-05-16 21:02:06,897 | wall7.py | START: 48, GOAL: 128e9dcf
+INFO    | 2018-05-16 21:02:28,353 | wall7.py | START: 58, GOAL: 5e9f46bf
+INFO    | 2018-05-16 21:02:52,426 | wall7.py | START: c0, GOAL: 5d8a9099
+INFO    | 2018-05-16 21:03:15,321 | wall7.py | START: ff, GOAL: b1f740b4
+INFO    | 2018-05-16 21:03:38,293 | wall7.py | Asking z3 for a satisfying program.
+INFO    | 2018-05-16 21:04:01,686 | wall7.py | GOT: 1203203203203203203203203
+INFO    | 2018-05-16 21:04:01,687 | wall7.py | Running sanity check for program synthesis
+INFO    | 2018-05-16 21:04:04,059 | wall7.py | R1:       0
+INFO    | 2018-05-16 21:04:04,059 | wall7.py | Goal was: 0
+INFO    | 2018-05-16 21:04:06,147 | wall7.py | R1:       128e9dcf
+INFO    | 2018-05-16 21:04:06,148 | wall7.py | Goal was: 128e9dcf
+INFO    | 2018-05-16 21:04:08,257 | wall7.py | R1:       5e9f46bf
+INFO    | 2018-05-16 21:04:08,257 | wall7.py | Goal was: 5e9f46bf
+INFO    | 2018-05-16 21:04:10,356 | wall7.py | R1:       5d8a9099
+INFO    | 2018-05-16 21:04:10,356 | wall7.py | Goal was: 5d8a9099
+INFO    | 2018-05-16 21:04:12,501 | wall7.py | R1:       b1f740b4
+INFO    | 2018-05-16 21:04:12,501 | wall7.py | Goal was: b1f740b4
+INFO    | 2018-05-16 21:04:12,501 | wall7.py | PROGRAM: 1203203203203203203203203
+python wall7.py  134.62s user 0.86s system 100% cpu 2:15.19 total
+% ./kingdom 174 116 ACHIEVEMENTAWARD a a a a a BBB 1203203203203203203203203 a
+Run Program Correctly Wall destroyed...please continue (0/10)
+174, 116, 58GCD Wall destroyed - 2 achievments awarded...please continue (2/10)
+Malicious AES Wall destroyed - achievment awarded...please continue (3/10)
+Symbolic Termination Wall destroyed - achievment awarded...please continue (4/10)
+Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (6/10)
+Advanced_Control Flow Merging Wall destroyed - 2 achievments awarded...please continue (8/10)
+Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
+Program Synthesis Wall destroyed - achievment awarded...please continue (10/10)
+All walls destroyed - YOU WIN!
+```
+*Figure 16*.  `10` of `10` achievements passed!
 
 ### Conclusion
 
