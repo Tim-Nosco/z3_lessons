@@ -1,4 +1,5 @@
-# A Centaur With `angr`
+
+# Storming The Kingdom With `angr`
 #### Tim Nosco
 ### Introduction
 
@@ -323,4 +324,3 @@ All walls destroyed - YOU WIN!
 ### Conclusion
 
 `angr` made the _Malicious AES Wall_ much easier than manually reversing the math done during key expansion. It solved _GCD_ quickly once I started past the `atoi` and `strlen` calls. I'm not sure I could have ever solved the program synthesis wall by myself and `angr` failed solving the wall by itself. Overall, the combination of manual analysis and automated analysis was more effective than either alone.
-
