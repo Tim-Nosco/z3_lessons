@@ -233,6 +233,56 @@ Exploit Chaining Wall destroyed - achievment awarded...please continue (9/10)
 
 ### Program Synthesis
 
+The last challenge of kingdom is to get z3 to write a program for me. The function symbol for this wall is `crc32_test` and it turns out it wants me to provide a program that generates the `crc32` table. *Figure 13* shows the four functions we have at our disposal. 
+
+```c
+
+```
+*Figure 13*. The four basic blocks for our program.
+
+I tried to point `angr` at `crc32_test` and unfortunately it couldn't even reason about a single symbolic byte. So instead I devised a scheme to glue the four basic blocks together myself. *Figure 14* shows my code to run a symbolic program. I start by setting up the four `uint32_t` values within the `program_state` struct.  For each 8-bit symbolic instruction, I call each of the 4 building block instructions. Every time I call a function, I merge the resulting state into `s` on the condition that the symbolic instruction is the building block function's assigned byte-code. Once all instructions are finished, I return the `R1` value in the `program_state`.
+
+```python
+def run_program(s, R1_start, instructions):
+	#initialize the program_state struct
+	s.mem[program_state_addr+0x0].uint32_t = R1_start
+	s.mem[program_state_addr+0x4].uint32_t = 0
+	s.mem[program_state_addr+0x8].uint32_t = 0x4c11db7
+	s.mem[program_state_addr+0xc].uint32_t = 0
+	#go through each instruction, trying each possible function
+	for instr in instructions:
+		logger.debug("On instruction: %s", instr)
+		#set the functions' base_state to the currently collected state
+		functions = [p.factory.callable(x,base_state=s) for x in addrs]
+		for i, f in enumerate(functions):
+			#run the function with the program_state's address as an arg
+			f(program_state_addr)
+			#merge the resulting state into the collector state
+			# only use this state's values if the instruction at this
+			# position was the one matching the current function
+			s = s.merge(f.result_state, 
+				merge_conditions=[[instr!=str(i)],[instr==str(i)]])[0]
+	#return the value in R1
+	return s.mem[program_state_addr].uint32_t.resolved
+```
+*Figure 14*. This function runs a set of symbolic instructions given a concrete starting state.
+
+The function in *Figure 14* does something subtle but nice for my analysis. The state merging allows me to only inspect the `program_state` memory once all instructions are completed.  There is another key thing that helps my analysis as well. *Figure 15* shows that I ensure no program run can modify the state that collects our program output assertions (held in `c_state`). This ensures that each `run_program` call is independent and _SIGNIFICANTLY_ faster than if a single state held the constraints for all runs.
+
+```python
+#c_state will collect all the goal constraints for our final eval
+c_state = start_state.copy()
+for R1_start, goal in rounds:
+	logger.info("START: %x, GOAL: %x", R1_start, goal)
+	#run the program being sure not to modify the starting state
+	# but also using the same set of instructions as every other
+	# starting R1 value
+	r = run_program(start_state.copy(), R1_start, instructions)
+	#assert the result must be our goal value
+	c_state.add_constraints(r==goal)
+```
+*Figure 15*. Shows the code that calls `run_program`. After ____ cpu seconds, `angr` solved wall `7` and achieved `10` of `10` achievements!
+
 ### Conclusion
 
 `angr` made the _Malicious AES Wall_ much easier than manually reversing the math done during key expansion. It solved _GCD_ quickly once I started past the `atoi` and `strlen` calls. Overall, the combination of manual analysis and automated analysis was more effective than either alone.
