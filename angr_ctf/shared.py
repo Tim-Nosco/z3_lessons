@@ -16,10 +16,10 @@ def hook(l):
 def run_bin(fname, stdin, **kwargs):
 	if '/' != fname[0]:
 		fname = './'+fname
-	logger.info("RUNNING: %s with %s", fname, stdin)
+	logger.info("RUNNING: %s with %s", fname, repr(stdin))
 	p = subprocess.Popen([fname],
 			stdin=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
 	out = p.communicate(input="{}\n".format(stdin))
 	logger.info("RESULT: %s", out)
 
-#00, 01, 07, 08, 09, 10
+#00, 01, 07, 08, 09, 12, 15
