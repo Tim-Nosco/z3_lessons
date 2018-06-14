@@ -22,4 +22,4 @@ def run_bin(fname, stdin, **kwargs):
 	out = p.communicate(input="{}\n".format(stdin))
 	logger.info("RESULT: %s", out)
 
-#00, 01, 07, 08, 09, 12, 15
+#00, 01, 07, 08, 09, 12, 15, 16, 17
