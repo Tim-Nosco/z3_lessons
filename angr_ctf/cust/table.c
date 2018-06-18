@@ -64,8 +64,8 @@ int main(int argc, char const *argv[]){
 	char buf[8];
 	memset(buf,8,0);
 	scanf("%8s", buf);
-	
-	int i = 0; asub;
+	int i;
+	i = 0; asub;
 
 	printf("%lx\n", *(uint64_t *)buf);
 	if(*(uint64_t *)buf == 0x694089d12ce04e20){
