@@ -5,8 +5,8 @@ from threading import Lock
 from subprocess import check_output
 import re
 
-NUMCRYPT = 1024
-NUMSAMPLE= 1000000
+NUMCRYPT = 4096
+NUMSAMPLE= 2000000
 
 class atomic_ctr:
 	def __init__(self):
@@ -20,7 +20,8 @@ class atomic_ctr:
 
 def run_arc(collect, i):
 	key = int(os.urandom(15).encode('hex'),16)
-	o = check_output(['./rc4', str(key)])
+	args = ['./rc4', str(key), str(NUMCRYPT), str(i)]
+	o = check_output(args)
 	m = re.findall(r'POSITION: ([0-9a-f]+)?\n([0-9a-f ]+?)\n', o)
 	for i1, l in m:
 		for i2, v in enumerate(l.split()):
@@ -28,7 +29,7 @@ def run_arc(collect, i):
 
 collect = [atomic_ctr() for i in range(NUMCRYPT)]
 p = Pool(4)
-p.map(partial(run_arc,collect), xrange((NUMSAMPLE+1)/100000))
+p.map(partial(run_arc,collect), [NUMSAMPLE/4]*4)
 
 collect = [x.max() for x in collect]
 expected = NUMSAMPLE/float(0x80)

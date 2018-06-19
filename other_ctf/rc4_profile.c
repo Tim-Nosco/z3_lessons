@@ -5,8 +5,9 @@
 
 #define swap tmp = table[i]; table[i] = table[j]; table[j] = tmp;
 
-#define SAMPLEN 100000
-#define MAXKEYBYTE 1024
+
+long int MAXKEYBYTE;
+long int SAMPLEN;
 
 uint16_t ** collect;
 
@@ -36,10 +37,13 @@ void single_run(){
 }
 int main(int argc, char const *argv[])
 {
-	if(argc<2) goto END;
+	if(argc<4) goto END;
 	long int seed;
 	sscanf(argv[1], "%ld", &seed);
 	srand48(seed);
+	sscanf(argv[2], "%ld", &MAXKEYBYTE);
+	sscanf(argv[3], "%ld", &SAMPLEN);
+	printf("%ld %ld %ld", seed, MAXKEYBYTE, SAMPLEN);
 	uint32_t i, b;
 	collect = calloc(MAXKEYBYTE, sizeof(uint16_t *));
 	for(i=0;i<MAXKEYBYTE;i++){
