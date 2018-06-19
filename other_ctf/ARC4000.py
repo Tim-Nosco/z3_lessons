@@ -5,7 +5,7 @@ from threading import Lock
 from subprocess import check_output
 import re
 
-NUMCRYPT = 4096
+NUMCRYPT = 1024
 NUMSAMPLE= 2000000
 
 class atomic_ctr:

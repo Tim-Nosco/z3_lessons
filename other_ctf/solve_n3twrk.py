@@ -38,6 +38,8 @@ def get_crypt(num_garbage_bytes):
 	import IPython
 	IPython.embed()
 
+
+
 magic = (0x5dd, 0x6e)
 
 def single_run(weights, i, idx):
