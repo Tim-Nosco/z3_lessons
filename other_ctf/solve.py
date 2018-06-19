@@ -15,7 +15,7 @@ def get_crypt(num_garbage_bytes):
 	IPython.embed()
 
 
-magic = (0xf7, 0x7b)
+magic = (0x3f9, 0x7c)
 for i in range(10):
 	weights = [0]*256
 	m = 0
