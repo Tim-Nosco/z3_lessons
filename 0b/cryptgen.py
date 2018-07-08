@@ -108,10 +108,9 @@ def hamming_approx(a):
 	t = reduce(lambda a,x:a+(z3.LShR(e,x)&1),range(0,a.size(),4),0)
 	return t
 
-def branch_number(in1,in2,program):
-	diff = in1^in2
-	#from sean, `branch_number = Hw(a^b)+Hw(P(a^b))`
-	return hamming_approx(diff)+hamming_approx(run_program(program,diff))
+def branch_number(in1,in2,out1,out2):
+	#from sean, `branch_number = Hw(a^b)+Hw(P(a)^P(b))`
+	return hamming_approx(in1^in2)+hamming_approx(out1^out2)
 
 def make_testcase(state):
 	#convert a tuple of python ints to a long bitvec
@@ -127,23 +126,23 @@ def test():
 	result = bv2gen(run_program(program,state))
 	print "RESULT STATE: {}".format(map(z3.simplify, result))
 
-def gen_program(s1,s2,ps1,ps2,bns,program,testcases):
+def gen_program(s1,s2,ps1,ps2,program,testcases):
 	#tries to find if there exists an [s1,s2,program] 
 	# that satisfies our assertions, if it finds one,
 	# but does not satisfy the greater qbf, it returns
 	# a counterexample that can be used for skolemization
 	s = z3.Solver()
-	for x,y,px,py,bn in testcases:
+	for x,y,px,py in testcases:
 		#assume x!=y (because we would not save a testcase of x==y)
 		#assert that program is invertable (forall[s1,s2], s1!=s2 -> ps1!=ps2) 
 		# and that the branch_number is > the target branch number
-		s.add(px!=py, bn>=TARGET_BNUM)
+		s.add(px!=py, branch_number(x,y,px,py)>=TARGET_BNUM)
 		#the program currently finishes if we do not assert the branch number
 		# and only assert invertability
 		# s.add(px!=py)
 	#assert that the (s1, s2, program) solution has the 
 	# target bnum and 1:1 map
-	s.add(z3.Implies(s1!=s2, z3.And(ps1!=ps2, bns>=TARGET_BNUM)))
+	s.add(z3.Implies(s1!=s2, z3.And(ps1!=ps2, branch_number(s1,s2,ps1,ps2)>=TARGET_BNUM)))
 	#again, asserting only invertability to prove bnum is the problem
 	# s.add(z3.Implies(s1!=s2, ps1!=ps2))
 	#multiple programs:
@@ -168,7 +167,7 @@ def gen_program(s1,s2,ps1,ps2,bns,program,testcases):
 	#assert the inverse of our invertability and target bnum goals
 	print "Finding a counterexample..."
 	s.add(z3.Not(z3.Implies(s1!=s2, z3.And(cs1!=cs2,
-			branch_number(s1,s2,c)>=TARGET_BNUM))))
+			branch_number(s1,s2,cs1,cs2)>=TARGET_BNUM))))
 	#prove that bnum is the problem and not invertability
 	# s.add(z3.Not(z3.Implies(s1!=s2,cs1!=cs2)))
 	r = s.check()
@@ -193,7 +192,7 @@ def gen_program(s1,s2,ps1,ps2,bns,program,testcases):
 def main():
 	#create a symbolic program
 	program = []
-	for i in range(5):
+	for i in range(8):
 		x = z3.BitVec('pc{}'.format(i),7)
 		program.append(x)
 	#two symbolic inputs will be used to make assertions
@@ -203,7 +202,6 @@ def main():
 	print "Running Program 3+3*len(testcases)"
 	ps1 = run_program(program,s1)
 	ps2 = run_program(program,s2)
-	bns = run_program(program,s1^s2)
 	#run each concrete input through the symbolic program
 	testcases = []
 	def prepare_test(x,y):
@@ -212,20 +210,19 @@ def main():
 		y = z3.BitVecVal(y,REGSIZE*4)
 		px = run_program(program,x)
 		py = run_program(program,y)
-		bn = branch_number(x,y,program)
-		return x,y,px,py,bn
+		return x,y,px,py
 	with open("testcases.txt", "r") as f:
 		for line in f:
 			testcases.append(prepare_test(*eval(line)))
 	print "ran program {}x".format(len(testcases)*3+3)
 	#gen_program will make a new solver object and create assertions
-	g = gen_program(s1,s2,ps1,ps2,bns,program,testcases)
+	g = gen_program(s1,s2,ps1,ps2,program,testcases)
 	#call gen_program until we can prove it has the desired traits
 	while g!=None:
 		testcases.append(prepare_test(*g))
-		g = gen_program(s1,s2,ps1,ps2,bns,program,testcases)
+		g = gen_program(s1,s2,ps1,ps2,program,testcases)
 	#print out the testcases as a "quicksave"
-	for x,y,_,_,_ in testcases:
+	for x,y,_,_ in testcases:
 		print "{}".format((x,y))
 	#enter interactive mode so state is preserved for manual analysis
 	import IPython
