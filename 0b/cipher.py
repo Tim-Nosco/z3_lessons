@@ -1,5 +1,5 @@
 from base64 import b64encode, b64decode
-from random import sample
+from random import sample,randint
 
 MAXBITS= 3
 MAXVAL = 2**MAXBITS
@@ -42,7 +42,7 @@ def gen_key():
 	c = range(MAXVAL)
 	u = sample(c,MAXVAL)
 	l = sample(c,MAXVAL)
-	return [(x<<MAXBITS)|y for x,y in zip(u,l)]
+	return [(x<<MAXBITS)|y for x,y in zip(u,l)], randint(0,2**(2*MAXBITS))
 
 def keyed_sbox(sbox,key):
 	"""
@@ -77,15 +77,18 @@ def sub(m,sbox):
 	return ''.join(k.get(x,'=') for x in b64encode(m)).decode('base64')
 
 def propigate(m,key_bit):
+	bmask = (1<<(len(m)*8))-1
 	ml = int(m.encode('hex'),16)
-	mask = int('01'*(ml.bit_length()*2 + 1),2)
-	v0 = ml&mask
-	v1 = (ml>>1)&mask
+	hmask = int('01'*bmask.bit_length(),2)
+	v0 = ml&hmask
+	v1 = (ml>>1)&hmask
 	v2 = v0^v1
 	v3 = (v0&v1)<<1
 	v4 = v2|v3
-	v5 = ~v4 if key_bit else v4
-	return hex(v5)[2:].replace('L','').decode('hex')
+	v5 = v4^bmask if key_bit else v4
+	print bin(v5)[2:].zfill(bmask.bit_length())
+	v6 = (v5+ml)&bmask
+	return hex(v6)[2:].replace('L','').zfill(len(m)*2).decode('hex')
 
 def encrypt_round(m, key, round_num, sbox):
 	c0 = sub(m,sbox)
@@ -104,9 +107,8 @@ def analysis(p0,p1,kbits,ksbox):
 
 if __name__ == '__main__':
 	sbox = read_sbox()
-	key = gen_key()
+	key,kbits = gen_key()
 	ksbox = keyed_sbox(sbox,key)
-	kbits = reduce(lambda a,x: a|((1<<x[0])&x[1]), enumerate(key), 0)
-	analysis('\x00\x00\x00','\x00\x00\x01', kbits,ksbox)
-	analysis('\x00\x00\x08','\x00\x00\x09', kbits,ksbox)
-	hook(locals())
+	analysis('\x00\x00\x00','\x00\x00\x01', kbits, ksbox)
+	analysis('\x00\x00\x08','\x00\x00\x09', kbits, ksbox)
+	# hook(locals())
