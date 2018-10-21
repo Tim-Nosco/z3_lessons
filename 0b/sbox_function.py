@@ -18,12 +18,15 @@ def hook(l=None):
 	IPython.embed(banner1="",confirm_exit=False)
 	exit()
 
-def main():
+def make_vecs():
 	upper_half = z3.Function("u", z3.BitVecSort(MAXBITS), 
 								z3.BitVecSort(MAXBITS), z3.BitVecSort(MAXBITS))
 	lower_half = z3.Function("l", z3.BitVecSort(MAXBITS), 
 								z3.BitVecSort(MAXBITS), z3.BitVecSort(MAXBITS))
-	s = z3.Solver()
+	return upper_half, lower_half
+
+def make_sbox(s, vecs):
+	upper_half,lower_half= vecs
 	#rows and columns
 	for i in range(MAXVAL):
 		#upper
@@ -52,6 +55,11 @@ def main():
 				for j in range(MAXVAL) for i in range(MAXVAL))
 	sbox = [m.eval(x,model_completion=True).as_long() for x in flat]
 	#print sbox
+	def lb642sb64(x):
+		x = int(''.join(map(lambda x: bin(x)[2:].zfill(MAXBITS*2), x)),2)
+		x = hex(x)[2:].replace('L','')
+		return x.zfill((len(x)+1)//2*2).decode('hex').encode('base64').strip()
+	print lb642sb64(sbox)
 	fmt_sbox = map(fmt,sbox)
 	for row in grouper(fmt_sbox,MAXVAL):
 		print row
@@ -60,6 +68,25 @@ def main():
 		print row
 	with open('/tmp/save.txt', 'w') as f:
 		f.write(''.join(fmt_sbox_hex))
+	return sbox
+
+def main():
+	sbox1 = make_sbox(z3.Solver(), make_vecs())
+	s = z3.Solver()
+	k = z3.BitVec("k", MAXBITS*2)
+	u,l = make_vecs()
+	mask = ((1<<MAXBITS)-1)
+	merged = [z3.Concat(u((i>>MAXBITS)&mask, i&mask), 
+						l((i>>MAXBITS)&mask, i&mask)) for i in range(2**(MAXBITS*2))]
+	s.add(z3.ForAll([k], 
+		z3.Or(*(k^sbox1[x]!=merged[x] for x in range(2**(MAXBITS*2))))))
+	sbox2 = make_sbox(s,(u,l))
+
+	s = z3.Solver()
+	s.add(z3.ForAll([k], 
+		z3.Or(*([k^sbox1[x]!=merged[x] for x in range(2**(MAXBITS*2))] + \
+				[k^sbox2[x]!=merged[x] for x in range(2**(MAXBITS*2))]))))
+	sbox3 = make_sbox(s,(u,l))
 	hook(locals())
 
 if __name__ == '__main__':
