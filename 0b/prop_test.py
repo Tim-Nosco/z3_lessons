@@ -1,43 +1,46 @@
 import z3
-def propigate_old(m,key_bit):
-	bmask = (1<<(3*8))-1
-	ml = m
-	hmask = int('01'*bmask.bit_length(),2)
-	v0 = ml&hmask
-	v1 = (ml>>1)&hmask
-	v2 = v0^v1
-	v3 = (v0&v1)<<1
-	v4 = v2|v3
-	v5 = z3.If(key_bit==1,v4^bmask,v4)
-	v6 = (v5+ml)&bmask
-	return v6
+MAXBITS = 3
+MAXVAL = 2**MAXBITS
 
-def ror(val, r_bits, max_bits):
-	return ((val & (2**max_bits-1)) >> r_bits%max_bits) | \
-		(val << (max_bits-(r_bits%max_bits)) & (2**max_bits-1))
+def b642ints(str_seq):
+	b64_alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	k = dict((x,i) for i,x in enumerate(b64_alpha))
+	return [k[x] for x in str_seq]	
+def ints2b64(seq_of_ints):
+	a = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	return ''.join(a[x] for x in seq_of_ints)
 
-def swap(l,i,j):
-	t = l[i]
-	l[i]=l[j]
-	l[j]=t
+def keyed_sbox(sbox,key):
+	"""
+	sbox: list[int]
+		This is the original bnum3 sbox loaded in as a list of ints
+	key: list[int]
+		This key has special properties, should be generated like in gen_key
+	return: str
+		The return is a new sbox, formatted as a b64 string
+	"""
+	m = (2**MAXBITS)-1
+	def sep(seq):
+		return zip(*(((x>>MAXBITS)&m, x&m) for x in seq))
+	def merge(u,l):
+		return (u<<MAXBITS)|l
+	sbox_upper, sbox_lower = sep(sbox)
+	key_upper, key_lower = sep(key)
+	upper_map = dict(zip(sbox_upper,key_upper))
+	lower_map = dict(zip(sbox_lower,key_lower))
+	new_sbox = [merge(upper_map[x], lower_map[y]) for x,y in 
+						zip(sbox_upper,sbox_lower)]
+	return ints2b64(new_sbox)
 
-def propigate(message,key_bit):
-	m = (1<<6)-1
-	p = [(message>>(6*i))&m for i in range(4)]
-	p[0]=ror(p[0], 1, 6)
-	p[0]=z3.If(key_bit==1,p[0],p[0]^m)
-	p[1]=z3.If(key_bit==1,ror(p[1], 1, 6), ror(p[1], 5, 6))
-	p[1]=p[1]^p[2]
-	p[2]=p[2]^p[0]
-	p[0]=(p[0]+p[1])&m
-	p[3]=p[3]^p[0]
-	swap(p,0,2)
-	swap(p,2,3)
-	swap(p,1,3)
-	return reduce(lambda a,x:a|(p[x]<<(6*x)), range(4), 0)
+def main():
+	with open("save.txt","r") as f:
+		data = f.read()
+	sboxes = map(b642ints, data.split()[:3])
+	key = [int(bin(i)[2:].zfill(MAXBITS)*2,2) for i in range(MAXVAL)]
+	new_sboxes = [keyed_sbox(s,key) for s in sboxes]
+	for o,n in zip(sboxes,new_sboxes):
+		print "old:",o
+		print "new:",n
 
 if __name__ == '__main__':
-	a,b = z3.BitVecs('a b',3*8)
-	k = z3.BitVec('k',1)
-	z3.prove(z3.ForAll([a,b,k], z3.Implies(a!=b,
-			propigate(a,k)!=propigate(b,k))))
+	main()
