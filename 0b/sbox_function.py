@@ -11,6 +11,11 @@ def flatten(x):
 def grouper(i, n):
 	return itertools.izip_longest(*([iter(i)] * n))
 
+def b642ints(str_seq):
+	b64_alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	k = dict((x,i) for i,x in enumerate(b64_alpha))
+	return [k[x] for x in str_seq]	
+
 def hook(l=None):
 	if l:
 		locals().update(l)
@@ -23,13 +28,10 @@ def make_vecs():
 								z3.BitVecSort(MAXBITS), z3.BitVecSort(MAXBITS))
 	lower_half = z3.Function("l", z3.BitVecSort(MAXBITS), 
 								z3.BitVecSort(MAXBITS), z3.BitVecSort(MAXBITS))
-	mask = ((1<<MAXBITS)-1)
-	merged = [z3.Concat(upper_half((i>>MAXBITS)&mask, i&mask), 
-						lower_half((i>>MAXBITS)&mask, i&mask)) for i in range(2**(MAXBITS*2))]
-	return upper_half,lower_half,merged
+	return upper_half, lower_half
 
-def make_sbox(s, vecs=None):
-	upper_half,lower_half,_ = make_vecs() if vecs==None else vecs
+def make_sbox(s, vecs):
+	upper_half,lower_half= vecs
 	#rows and columns
 	for i in range(MAXVAL):
 		#upper
@@ -58,6 +60,11 @@ def make_sbox(s, vecs=None):
 				for j in range(MAXVAL) for i in range(MAXVAL))
 	sbox = [m.eval(x,model_completion=True).as_long() for x in flat]
 	#print sbox
+	def lb642sb64(x):
+		x = int(''.join(map(lambda x: bin(x)[2:].zfill(MAXBITS*2), x)),2)
+		x = hex(x)[2:].replace('L','')
+		return x.zfill((len(x)+1)//2*2).decode('hex').encode('base64').strip()
+	print lb642sb64(sbox)
 	fmt_sbox = map(fmt,sbox)
 	for row in grouper(fmt_sbox,MAXVAL):
 		print row
@@ -69,13 +76,27 @@ def make_sbox(s, vecs=None):
 	return sbox
 
 def main():
-	sbox1 = make_sbox(z3.Solver())
-	# s = z3.Solver()
-	# k = z3.BitVec("k", 6)
-	# u,l,sbox2 = make_vecs()
+	with open("save.txt", "r") as f:
+		data = f.read()
+		sbox1, sbox2 = map(b642ints, data.split())[:2]
+	s = z3.Solver()
+	# sbox1 = make_sbox(s, make_vecs())
+	
+	s.reset()
+	k = z3.BitVec("k", MAXBITS*2)
+	u,l = make_vecs()
+	mask = ((1<<MAXBITS)-1)
+	merged = [z3.Concat(u((i>>MAXBITS)&mask, i&mask), 
+						l((i>>MAXBITS)&mask, i&mask)) for i in range(2**(MAXBITS*2))]
 	# s.add(z3.ForAll([k], 
-	# 	z3.Or(*(k^sbox1[x]!=sbox2[x] for x in range(2**(MAXBITS*2))))))
-	# sbox2 = make_sbox(s,(u,l,None))
+	# 	z3.Or(*(k^sbox1[x]!=merged[x] for x in range(2**(MAXBITS*2))))))
+	# sbox2 = make_sbox(s,(u,l))
+
+	s.reset()
+	s.add(z3.ForAll([k], 
+		z3.And(	z3.Or(*([k^sbox1[x]!=merged[x] for x in range(2**(MAXBITS*2))])),
+				z3.Or(*([k^sbox2[x]!=merged[x] for x in range(2**(MAXBITS*2))])))))
+	sbox3 = make_sbox(s,(u,l))
 	hook(locals())
 
 if __name__ == '__main__':

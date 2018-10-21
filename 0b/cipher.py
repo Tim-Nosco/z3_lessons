@@ -1,8 +1,6 @@
-from base64 import b64encode, b64decode
-from random import sample
+import os
 
-MAXBITS= 4
-MAXVAL = 2**MAXBITS
+BLOCK_SIZE = 12
 
 def hook(l=None):
 	if l:
@@ -11,123 +9,96 @@ def hook(l=None):
 	IPython.embed(banner1="",confirm_exit=False)
 	exit()
 
-def ror(val, r_bits, max_bits):
-	return ((val & (2**max_bits-1)) >> r_bits%max_bits) | \
-		(val << (max_bits-(r_bits%max_bits)) & (2**max_bits-1))
+def b642ints(str_seq):
+	b64_alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	k = dict((x,i) for i,x in enumerate(b64_alpha))
+	return [k[x] for x in str_seq]	
 
 def read_sbox():
 	with open('save.txt','r') as f:
 		data = f.read()
-	s = map(ord, data.decode('hex'))
-	m = (2**3)-1
-	s = zip(*(((x>>3)&m, x&m) for x in s))
-	return [(u<<MAXBITS)|l for u,l in zip(*s)]
-
-def expand_sbox(s0):
-	s1_key = [(x<<MAXBITS)|y for x,y in zip(range(8,16),range(8,16))]
-	s2_key = [(x<<MAXBITS)|y for x,y in zip(range(0, 8),range(8,16))]
-	s3_key = [(x<<MAXBITS)|y for x,y in zip(range(8,16),range(0, 8))]
-	s1 = keyed_sbox(s0, s1_key)
-	s2 = keyed_sbox(s0, s2_key)
-	s3 = keyed_sbox(s0, s3_key)
-	s0 = ''.join(map(chr,s0))
-	s  = ''.join(s0[x:8+x]+s1[x:8+x] for x in range(0,8*8,8))
-	s += ''.join(s2[x:8+x]+s3[x:8+x] for x in range(0,8*8,8))
-	return map(ord,s)
+	return [b642ints(line) for line in data.split()]
 
 def gen_key():
-	"""
-	The key is MAXVAL many elements which consist of unique upper halves
-		and lower halves.
-	"""
-	c = range(MAXVAL)
-	u = sample(c,MAXVAL)
-	l = sample(c,MAXVAL)
-	return [(x<<MAXBITS)|y for x,y in zip(u,l)]
-
-def keyed_sbox(sbox,key):
-	"""
-	sbox: list[int]
-		This is the original bnum3 sbox loaded in as a list of ints
-	key: list[int]
-		This key has special properties, should be generated like in gen_key
-	return: str
-		The return is a new sbox, formatted as a string
-	"""
-	m = (2**MAXBITS)-1
-	def sep(seq):
-		return zip(*(((x>>MAXBITS)&m, x&m) for x in seq))
-	def merge(u,l):
-		return (u<<MAXBITS)|l
-	sbox_upper, sbox_lower = sep(sbox)
-	key_upper, key_lower = sep(key)
-	upper_map = dict(zip(sbox_upper,key_upper))
-	lower_map = dict(zip(sbox_lower,key_lower))
-	new_sbox = [merge(upper_map[x], lower_map[y]) for x,y in 
-						zip(sbox_upper,sbox_lower)]
-	return ''.join(map(chr,new_sbox))
+	return int(os.urandom(BLOCK_SIZE).encode('hex'),16)
 
 def sub(m,sbox):
-	"""
-	m: str
-		a raw string to be substituted. for consistent results len(m)%3==0
-	sbox: str
-		a b64 encoded sbox (such as the output of keyed_sbox)
-	"""
-	k = dict(zip(map(chr,range(256)),sbox))
-	return ''.join(k[x] for x in m)
+	mask = (1<<6)-1
+	return reduce(lambda a,x: a|(sbox[(m>>x)&mask]<<x), range(0,BLOCK_SIZE*8,6), 0)
 
-def propagate(message):
-	def swap(l,i,j):
-		t = l[i]
-		l[i]=l[j]
-		l[j]=t
-	block_size = (len(message)*8)/4
-	ml = int(message.encode('hex'),16)
-	m = (1<<block_size)-1
-	p = [(ml>>(block_size*i))&m for i in range(4)]
-	p[0]=ror(p[0], 1, block_size)
-	p[0]=p[0]^m
-	p[1]=ror(p[1], 1, block_size)
-	p[1]=p[1]^p[2]
-	p[2]=p[2]^p[0]
-	p[0]=(p[0]+p[1])&m
-	p[3]=p[3]^p[0]
-	swap(p,0,2)
-	swap(p,2,3)
-	swap(p,1,3)
-	r = reduce(lambda a,x:a|(p[x]<<(block_size*x)), range(4), 0)
-	return hex(r)[2:].replace('L','').zfill(len(message)*2).decode('hex')
+def split_words(m):
+	mask = 0xFFFFFFFF
+	r0 = (m>>0) &mask
+	r1 = (m>>32)&mask
+	r2 = (m>>64)&mask
+	return r0,r1,r2
 
-def encrypt_round(m, sbox):
-	return propagate(sub(m, sbox))
+def join_words(r0,r1,r2):
+	m = 0
+	m |= r0 << 0
+	m |= r1 << 32
+	m |= r2 << 64
+	return m
 
-def encrypt(m, rounds, sbox):
-	return reduce(lambda a,_: encrypt_round(a,sbox), range(rounds), m)
+def ror(val, r_bits, max_bits):
+	return ((val & (2**max_bits-1)) >> r_bits%max_bits) | \
+		(val << (max_bits-(r_bits%max_bits)) & (2**max_bits-1))
 
-def analysis(p0,p1,ksbox):
-	print "------------"
-	def fmt(x): return x.encode('hex').zfill(6)
-	def diff(x,y): return hex(int(fmt(x),16)^int(fmt(y),16))[2:].replace('L',"").zfill(6)
-	print "single round."
-	print fmt(p0), fmt(p1)
-	c0 = encrypt(p0, 1, ksbox)
-	c1 = encrypt(p1, 1, ksbox)
-	print fmt(c0), fmt(c1)
+def expand_key(k):
+	yield k
+	mask = 0xFFFFFFFF
+	while True:
+		r0,r1,r2 = split_words(k)
+		r0 = ror(r0, 3, 32)
+		r0 = (r0 + r1) & mask
+		r1 = ror(r1, 7, 32)
+		r2 = r2 ^ r1
+		r2 = (r2 + r0) & mask
+		r1 = r1 ^ r0
+		k = join_words(r0,r1,r2)
+		yield k
+
+def bit_mix(m):
+	mask = 0xFFFFFFFF
+	r0,r1,r2 = split_words(m)
+	r2 = r2 ^ r1
+	r1 = (r1 + r0) & mask
+	r0 = ror(r0, 5, 32)
+	r2 = (r2 + r0) & mask
+	r0 = r0 ^ r1
+	return join_words(r0,r1,r2)
+
+def encrypt_round(m, key, round_num, sbox):
+	c0 = key ^ m
+	c1 = sub(c0,sbox[round_num%len(sbox)])
+	c2 = bit_mix(c1)
+	return c2
+
+def encrypt(m, key, rounds):
+	sbox = read_sbox()
+	key = expand_key(key)
+	ct = int(m.encode('hex'),16)
+	for i in range(rounds):
+		ct = encrypt_round(ct, key.next(), i, sbox)
+	ct_asx = hex(ct)[2:].replace('L','')
+	ct_asx = ct_asx.zfill((len(ct_asx)+1)//2*2)
+	return ct_asx.decode('hex')
+
+def analysis(p0,p1,key,rounds=4):
+	def fmt(x, style='base64'): return x.rjust(BLOCK_SIZE,'\x00').encode(style).strip()
+	def diff(x,y,style='base64'): 
+		return hex(int(x.encode('hex'),16)^int(y.encode('hex'),16))[2:]\
+				.replace('L',"").zfill(BLOCK_SIZE*2).decode('hex').encode(style).strip()
+	print "--------"
+	print "start vals:", fmt(p0), fmt(p1)
+	c0 = encrypt(p0,key,rounds)
+	c1 = encrypt(p1,key,rounds)
+	print "end vals:  ",fmt(c0), fmt(c1)
 	print "start diff:", diff(p0,p1)
-	print "end diff:  ", diff(c0,c1)
-	print "double round."
-	c0 = encrypt(p0, 2, ksbox)
-	c1 = encrypt(p1, 2, ksbox)
-	print fmt(c0), fmt(c1)
 	print "end diff:  ", diff(c0,c1)
 
 if __name__ == '__main__':
-	base_sbox = read_sbox()
-	sbox = expand_sbox(base_sbox)
 	key = gen_key()
-	ksbox = keyed_sbox(sbox,key)
-	print repr(ksbox.encode('hex')),len(set(ksbox)),len(ksbox)
-	analysis('\x00\x00\x00','\x00\x00\x01', ksbox)
-	analysis('\x00\x00\x08','\x00\x00\x09', ksbox)
+	analysis('\x00','\x01', key)
+	analysis('\x08','\x09', key)
 	# hook(locals())
