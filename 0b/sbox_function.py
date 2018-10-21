@@ -11,6 +11,11 @@ def flatten(x):
 def grouper(i, n):
 	return itertools.izip_longest(*([iter(i)] * n))
 
+def b642ints(str_seq):
+	b64_alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	k = dict((x,i) for i,x in enumerate(b64_alpha))
+	return [k[x] for x in str_seq]	
+
 def hook(l=None):
 	if l:
 		locals().update(l)
@@ -71,21 +76,26 @@ def make_sbox(s, vecs):
 	return sbox
 
 def main():
-	sbox1 = make_sbox(z3.Solver(), make_vecs())
+	with open("save.txt", "r") as f:
+		data = f.read()
+		sbox1, sbox2 = map(b642ints, data.split())[:2]
 	s = z3.Solver()
+	# sbox1 = make_sbox(s, make_vecs())
+	
+	s.reset()
 	k = z3.BitVec("k", MAXBITS*2)
 	u,l = make_vecs()
 	mask = ((1<<MAXBITS)-1)
 	merged = [z3.Concat(u((i>>MAXBITS)&mask, i&mask), 
 						l((i>>MAXBITS)&mask, i&mask)) for i in range(2**(MAXBITS*2))]
-	s.add(z3.ForAll([k], 
-		z3.Or(*(k^sbox1[x]!=merged[x] for x in range(2**(MAXBITS*2))))))
-	sbox2 = make_sbox(s,(u,l))
+	# s.add(z3.ForAll([k], 
+	# 	z3.Or(*(k^sbox1[x]!=merged[x] for x in range(2**(MAXBITS*2))))))
+	# sbox2 = make_sbox(s,(u,l))
 
-	s = z3.Solver()
+	s.reset()
 	s.add(z3.ForAll([k], 
-		z3.Or(*([k^sbox1[x]!=merged[x] for x in range(2**(MAXBITS*2))] + \
-				[k^sbox2[x]!=merged[x] for x in range(2**(MAXBITS*2))]))))
+		z3.And(	z3.Or(*([k^sbox1[x]!=merged[x] for x in range(2**(MAXBITS*2))])),
+				z3.Or(*([k^sbox2[x]!=merged[x] for x in range(2**(MAXBITS*2))])))))
 	sbox3 = make_sbox(s,(u,l))
 	hook(locals())
 
