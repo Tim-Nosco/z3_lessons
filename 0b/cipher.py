@@ -84,7 +84,7 @@ def encrypt(m, key, rounds):
 	ct_asx = ct_asx.zfill((len(ct_asx)+1)//2*2)
 	return ct_asx.decode('hex')
 
-def analysis(p0,p1,key,rounds=3):
+def analysis(p0,p1,key,rounds=4):
 	def fmt(x, style='base64'): return x.rjust(BLOCK_SIZE,'\x00').encode(style).strip()
 	def diff(x,y,style='base64'): 
 		return hex(int(x.encode('hex'),16)^int(y.encode('hex'),16))[2:]\

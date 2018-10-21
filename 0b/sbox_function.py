@@ -14,6 +14,9 @@ def b642ints(str_seq):
 	b64_alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 	k = dict((x,i) for i,x in enumerate(b64_alpha))
 	return [k[x] for x in str_seq]	
+def ints2b64(seq_of_ints):
+	b64_alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	return ''.join(b64_alpha[x] for x in seq_of_ints)
 
 def hook(l=None):
 	if l:
@@ -72,6 +75,28 @@ def make_sbox(s, vecs):
 		f.write(''.join(b64_sbox))
 	return sbox
 
+def keyed_sbox(sbox):
+	"""
+	sbox: list[int]
+		This is the original bnum3 sbox loaded in as a list of ints
+	return: str
+		The return is a new sbox, formatted as a b64 string
+	"""
+	key = [int(bin(i)[2:].zfill(MAXBITS)*2,2) for i in range(MAXVAL)]
+	m = (2**MAXBITS)-1
+	def sep(seq):
+		return zip(*(((x>>MAXBITS)&m, x&m) for x in seq))
+	def merge(u,l):
+		return (u<<MAXBITS)|l
+	sbox_upper, sbox_lower = sep(sbox)
+	key_upper, key_lower = sep(key)
+	upper_map = dict(zip(sbox_upper,key_upper))
+	lower_map = dict(zip(sbox_lower,key_lower))
+	new_sbox = [merge(upper_map[x], lower_map[y]) for x,y in 
+						zip(sbox_upper,sbox_lower)]
+	print "transformed:", ints2b64(new_sbox)
+	return new_sbox
+
 def main():
 	# with open("save.txt", "r") as f:
 	# 	data = f.read()
@@ -80,20 +105,12 @@ def main():
 	s = z3.Solver()
 	u,l = make_vecs()
 	sbox1 = make_sbox(s, (u,l))
-	
-	s.reset()
-	k = z3.BitVec("k", MAXBITS)
-	mask = ((1<<MAXBITS)-1)
-	#2nd row (lower part) is different from sbox1
-	s.add(z3.ForAll([k], 
-		z3.Or(*((k^sbox1[x])&mask != l(x,1) for x in range(MAXVAL)))))
-	sbox2 = make_sbox(s,(u,l))
+	keyed_sbox(sbox1)
 
-	s.reset()
-	s.add(z3.ForAll([k], 
-		z3.And(	z3.Or(*((k^sbox1[x])&mask != l(x,1) for x in range(MAXVAL))),
-				z3.Or(*((k^sbox2[x])&mask != l(x,1) for x in range(MAXVAL))))))
-	sbox3 = make_sbox(s,(u,l))
+	mask = (1<<MAXBITS)-1
+	s.add(z3.Or(*(l(i,j)!=(sbox1[(j<<MAXBITS)|i]&mask) for j in range(MAXVAL) for i in range(MAXVAL))))
+	sbox2 = make_sbox(s, (u,l))
+	keyed_sbox(sbox2)
 
 	hook(locals())
 

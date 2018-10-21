@@ -10,15 +10,14 @@ def ints2b64(seq_of_ints):
 	a = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 	return ''.join(a[x] for x in seq_of_ints)
 
-def keyed_sbox(sbox,key):
+def keyed_sbox(sbox):
 	"""
 	sbox: list[int]
 		This is the original bnum3 sbox loaded in as a list of ints
-	key: list[int]
-		This key has special properties, should be generated like in gen_key
 	return: str
 		The return is a new sbox, formatted as a b64 string
 	"""
+	key = [int(bin(i)[2:].zfill(MAXBITS)*2,2) for i in range(MAXVAL)]
 	m = (2**MAXBITS)-1
 	def sep(seq):
 		return zip(*(((x>>MAXBITS)&m, x&m) for x in seq))
@@ -36,8 +35,7 @@ def main():
 	with open("save.txt","r") as f:
 		data = f.read()
 	sboxes = map(b642ints, data.split()[:3])
-	key = [int(bin(i)[2:].zfill(MAXBITS)*2,2) for i in range(MAXVAL)]
-	new_sboxes = [keyed_sbox(s,key) for s in sboxes]
+	new_sboxes = map(keyed_sbox,sboxes)
 	for o,n in zip(sboxes,new_sboxes):
 		print "old:",o
 		print "new:",n
